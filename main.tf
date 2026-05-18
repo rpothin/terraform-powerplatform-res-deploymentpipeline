@@ -93,7 +93,6 @@ resource "powerplatform_data_record" "deployment_environment" {
   columns = {
     environmentid = each.value.id
     name          = each.value.name
-    ownerid       = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     statecode     = local.deployment_environment_statecode
     statuscode    = local.deployment_environment_statuscode
   }
@@ -162,7 +161,6 @@ resource "powerplatform_data_record" "pipeline" {
     isdeploymentnotesandaiinsights = var.enable_ai_deployment_notes
     isredeploymentenabled          = var.enable_redeployment
     name                           = var.pipeline_name
-    ownerid                        = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     statecode                      = local.pipeline_statecode
     statuscode                     = local.pipeline_statuscode
   }
@@ -213,7 +211,6 @@ resource "powerplatform_data_record" "stage_depth_0" {
     isautomateddeployment        = var.pipeline_stages[0].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[0].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[0].require_predeployment_approval
     preexportsteprequired        = var.pipeline_stages[0].require_preexport_approval
     statecode                    = local.stage_statecode
@@ -245,7 +242,6 @@ resource "powerplatform_data_record" "stage_depth_1" {
     isautomateddeployment        = var.pipeline_stages[1].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[1].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[1].require_predeployment_approval
     preexportsteprequired        = false
     previousdeploymentstageid    = "/deploymentstages(${one(values(powerplatform_data_record.stage_depth_0)).id})"
@@ -273,7 +269,6 @@ resource "powerplatform_data_record" "stage_depth_2" {
     isautomateddeployment        = var.pipeline_stages[2].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[2].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[2].require_predeployment_approval
     preexportsteprequired        = false
     previousdeploymentstageid    = "/deploymentstages(${one(values(powerplatform_data_record.stage_depth_1)).id})"
@@ -301,7 +296,6 @@ resource "powerplatform_data_record" "stage_depth_3" {
     isautomateddeployment        = var.pipeline_stages[3].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[3].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[3].require_predeployment_approval
     preexportsteprequired        = false
     previousdeploymentstageid    = "/deploymentstages(${one(values(powerplatform_data_record.stage_depth_2)).id})"
@@ -329,7 +323,6 @@ resource "powerplatform_data_record" "stage_depth_4" {
     isautomateddeployment        = var.pipeline_stages[4].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[4].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[4].require_predeployment_approval
     preexportsteprequired        = false
     previousdeploymentstageid    = "/deploymentstages(${one(values(powerplatform_data_record.stage_depth_3)).id})"
@@ -357,7 +350,6 @@ resource "powerplatform_data_record" "stage_depth_5" {
     isautomateddeployment        = var.pipeline_stages[5].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[5].is_sharing_enabled
     name                         = var.environments[each.key].name
-    ownerid                      = var.owner_system_user_id != null ? "/systemusers(${var.owner_system_user_id})" : null
     predeploymentsteprequired    = var.pipeline_stages[5].require_predeployment_approval
     preexportsteprequired        = false
     previousdeploymentstageid    = "/deploymentstages(${one(values(powerplatform_data_record.stage_depth_4)).id})"

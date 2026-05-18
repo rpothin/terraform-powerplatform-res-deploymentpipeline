@@ -189,14 +189,6 @@ Type: `string`
 
 Default: `"active"`
 
-### <a name="input_owner_system_user_id"></a> [owner\_system\_user\_id](#input\_owner\_system\_user\_id)
-
-Description: The Dataverse system user ID (UUID) that will own the deployment pipeline records in the Pipelines Host environment. When `null` (the default), Dataverse assigns ownership to the identity running the Terraform apply.
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_pipeline_description"></a> [pipeline\_description](#input\_pipeline\_description)
 
 Description: An optional description for the deployment pipeline. Maximum 500 characters.
@@ -251,6 +243,7 @@ The items below represent areas under consideration for future versions of this 
 | 2 | **GitHub solution export integration** | Support for configuring automatic solution export to a GitHub repository as part of the pipeline (`extend-pipelines-github-export` feature), enabling a GitOps-aligned ALM flow directly from Pipelines. |
 | 3 | **Multiple access groups** | The current module accepts a single Entra ID security group. A future version may accept a list to enable finer-grained access control — for example, separate groups per stage or per role (approver vs. deployer). |
 | 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must pre-register the application as an application user in Dataverse and supply its `systemuserid`. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
+| 5 | **Record ownership (`ownerid`)** | Explicitly setting the owner of Dataverse records created by this module is not currently supported. The Power Platform provider serialises the `ownerid` lookup column in a format rejected by the `deploymentenvironment`, `deploymentpipeline`, and `deploymentstage` Dataverse entities. Records are owned by the identity running Terraform apply. This will be re-evaluated once provider-level support for lookup-column object format is confirmed. |
 
 Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 

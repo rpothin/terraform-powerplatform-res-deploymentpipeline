@@ -74,14 +74,6 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_owner_system_user_id"></a> [owner\_system\_user\_id](#input\_owner\_system\_user\_id)
-
-Description: The Dataverse system user ID that will own the pipeline records. When null, defaults to the identity running the apply.
-
-Type: `string`
-
-Default: `null`
-
 ### <a name="input_pipeline_description"></a> [pipeline\_description](#input\_pipeline\_description)
 
 Description: An optional description for the deployment pipeline.

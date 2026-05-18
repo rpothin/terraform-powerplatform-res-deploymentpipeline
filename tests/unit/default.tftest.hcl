@@ -46,16 +46,6 @@ run "rejects_invalid_host_environment_id" {
   expect_failures = [var.host_environment_id]
 }
 
-run "rejects_invalid_owner_system_user_id" {
-  command = plan
-
-  variables {
-    owner_system_user_id = "invalid"
-  }
-
-  expect_failures = [var.owner_system_user_id]
-}
-
 run "rejects_environment_with_invalid_uuid" {
   command = plan
 

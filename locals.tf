@@ -10,10 +10,6 @@ locals {
 
   deployment_pipeline_user_role_id = length(local.deployment_pipeline_user_role_matches) == 1 ? local.deployment_pipeline_user_role_matches[0] : null
 
-  owner_id_column = var.owner_system_user_id != null ? {
-    ownerid = "/systemusers(${var.owner_system_user_id})"
-  } : {}
-
   pipeline_statecode  = var.lifecycle_state == "active" ? 0 : 1
   pipeline_statuscode = var.lifecycle_state == "active" ? 1 : 2
 
