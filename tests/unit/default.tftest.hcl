@@ -12,12 +12,11 @@ mock_provider "powerplatform" {
 }
 
 variables {
-  dev_environment_key  = "dev"
-  host_environment_id  = "11111111-1111-1111-1111-111111111111"
-  owner_system_user_id = "22222222-2222-2222-2222-222222222222"
-  pipeline_name        = "My Pipeline"
-  pipelines_host_url   = "https://org.crm.dynamics.com"
-  security_group_id    = "cccccccc-cccc-cccc-cccc-cccccccccccc"
+  dev_environment_key = "dev"
+  host_environment_id = "11111111-1111-1111-1111-111111111111"
+  pipeline_name       = "My Pipeline"
+  pipelines_host_url  = "https://org.crm.dynamics.com"
+  security_group_id   = "cccccccc-cccc-cccc-cccc-cccccccccccc"
 
   environments = {
     dev = {

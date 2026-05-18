@@ -57,12 +57,12 @@ variable "host_environment_id" {
 }
 
 variable "owner_system_user_id" {
-  description = "The Dataverse system user ID (UUID) that will own the deployment pipeline records in the Pipelines Host environment."
+  description = "The Dataverse system user ID (UUID) that will own the deployment pipeline records in the Pipelines Host environment. When `null` (the default), Dataverse assigns ownership to the identity running the Terraform apply."
   type        = string
-  nullable    = false
+  default     = null
 
   validation {
-    condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.owner_system_user_id))
+    condition     = var.owner_system_user_id == null || can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.owner_system_user_id))
     error_message = "owner_system_user_id must be a valid lowercase UUID (e.g., 00000000-0000-0000-0000-000000000000)."
   }
 }

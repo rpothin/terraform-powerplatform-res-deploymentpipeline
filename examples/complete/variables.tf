@@ -9,8 +9,9 @@ variable "host_environment_id" {
 }
 
 variable "owner_system_user_id" {
-  description = "The Dataverse system user ID that will own the pipeline records."
+  description = "The Dataverse system user ID that will own the pipeline records. When null, defaults to the identity running the apply."
   type        = string
+  default     = null
 }
 
 variable "pipeline_description" {

@@ -8,11 +8,6 @@ variable "host_environment_id" {
   type        = string
 }
 
-variable "owner_system_user_id" {
-  description = "The Dataverse system user ID that will own the pipeline records."
-  type        = string
-}
-
 variable "pipeline_name" {
   description = "The display name of the deployment pipeline."
   type        = string

@@ -11,12 +11,11 @@ terraform {
 module "deployment_pipeline" {
   source = "../.."
 
-  dev_environment_key  = "dev"
-  host_environment_id  = var.host_environment_id
-  owner_system_user_id = var.owner_system_user_id
-  pipeline_name        = var.pipeline_name
-  pipelines_host_url   = var.pipelines_host_url
-  security_group_id    = var.security_group_id
+  dev_environment_key = "dev"
+  host_environment_id = var.host_environment_id
+  pipeline_name       = var.pipeline_name
+  pipelines_host_url  = var.pipelines_host_url
+  security_group_id   = var.security_group_id
 
   environments = {
     dev = {

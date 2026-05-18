@@ -34,12 +34,6 @@ Description: The Power Platform environment ID of the Pipelines Host environment
 
 Type: `string`
 
-### <a name="input_owner_system_user_id"></a> [owner\_system\_user\_id](#input\_owner\_system\_user\_id)
-
-Description: The Dataverse system user ID that will own the pipeline records.
-
-Type: `string`
-
 ### <a name="input_pipeline_name"></a> [pipeline\_name](#input\_pipeline\_name)
 
 Description: The display name of the deployment pipeline.
@@ -79,6 +73,14 @@ Type: `string`
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_owner_system_user_id"></a> [owner\_system\_user\_id](#input\_owner\_system\_user\_id)
+
+Description: The Dataverse system user ID that will own the pipeline records. When null, defaults to the identity running the apply.
+
+Type: `string`
+
+Default: `null`
 
 ### <a name="input_pipeline_description"></a> [pipeline\_description](#input\_pipeline\_description)
 

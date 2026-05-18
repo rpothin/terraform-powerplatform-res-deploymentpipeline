@@ -4,7 +4,6 @@
 #   POWER_PLATFORM_CLIENT_ID
 #   ARM_USE_OIDC=true
 #   TF_VAR_host_environment_id=<real-host-env-id>
-#   TF_VAR_owner_system_user_id=<real-user-id>
 #   TF_VAR_pipelines_host_url=<real-url>
 #   TF_VAR_security_group_id=<real-entra-group-id>
 
@@ -15,10 +14,9 @@ variables {
   pipeline_name           = "tftest-deployment-pipeline"
   validation_wait_seconds = 60
 
-  host_environment_id  = "00000000-0000-0000-0000-000000000000"
-  owner_system_user_id = "00000000-0000-0000-0000-000000000000"
-  pipelines_host_url   = "https://placeholder.crm.dynamics.com"
-  security_group_id    = "00000000-0000-0000-0000-000000000000"
+  host_environment_id = "00000000-0000-0000-0000-000000000000"
+  pipelines_host_url  = "https://placeholder.crm.dynamics.com"
+  security_group_id   = "00000000-0000-0000-0000-000000000000"
 
   environments = {
     dev = {
