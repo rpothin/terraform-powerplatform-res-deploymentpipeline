@@ -5,7 +5,8 @@ locals {
   pipeline_statecode  = var.lifecycle_state == "active" ? 0 : 1
   pipeline_statuscode = var.lifecycle_state == "active" ? 1 : 2
 
-  pipelines_host_scope = "${var.pipelines_host_url}/.default"
+  pipelines_host_url_normalized = trimsuffix(var.pipelines_host_url, "/")
+  pipelines_host_scope          = "${local.pipelines_host_url_normalized}/.default"
 
   sharing_enabled = var.enable_sharing && var.share_with_team_id != null
 

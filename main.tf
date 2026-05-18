@@ -86,7 +86,8 @@ resource "terraform_data" "wait_for_validation" {
   for_each = var.environments
 
   triggers_replace = [
-    powerplatform_data_record.deployment_environment[each.key].id
+    powerplatform_data_record.deployment_environment[each.key].id,
+    var.validation_wait_seconds,
   ]
 
   provisioner "local-exec" {
@@ -151,9 +152,9 @@ resource "powerplatform_rest" "dev_link" {
   create = {
     scope  = local.pipelines_host_scope
     method = "POST"
-    url    = "${var.pipelines_host_url}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref"
+    url    = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref"
     body = jsonencode({
-      "@odata.id" = "${var.pipelines_host_url}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
+      "@odata.id" = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
     })
     expected_http_status = [204]
   }
@@ -161,7 +162,7 @@ resource "powerplatform_rest" "dev_link" {
   destroy = {
     scope                = local.pipelines_host_scope
     method               = "DELETE"
-    url                  = "${var.pipelines_host_url}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${var.pipelines_host_url}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
+    url                  = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
     body                 = ""
     expected_http_status = [204]
   }
@@ -349,7 +350,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
   create = {
     scope  = local.pipelines_host_scope
     method = "POST"
-    url    = "${var.pipelines_host_url}/api/data/v9.0/GrantAccess"
+    url    = "${local.pipelines_host_url_normalized}/api/data/v9.0/GrantAccess"
     body = jsonencode({
       Target = {
         deploymentpipelineid = powerplatform_data_record.pipeline.id
@@ -369,7 +370,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
   destroy = {
     scope  = local.pipelines_host_scope
     method = "POST"
-    url    = "${var.pipelines_host_url}/api/data/v9.0/RevokeAccess"
+    url    = "${local.pipelines_host_url_normalized}/api/data/v9.0/RevokeAccess"
     body = jsonencode({
       Target = {
         deploymentpipelineid = powerplatform_data_record.pipeline.id
