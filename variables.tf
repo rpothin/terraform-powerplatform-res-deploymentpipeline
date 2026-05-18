@@ -121,6 +121,17 @@ DESCRIPTION
   }
 }
 
+variable "security_group_id" {
+  description = "The Entra ID (Azure AD) security group object ID to grant access to the deployment pipeline. The module creates a Dataverse team backed by this group, assigns the 'Deployment Pipeline User' security role, and shares the pipeline with the team."
+  type        = string
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.security_group_id))
+    error_message = "security_group_id must be a valid lowercase UUID (e.g., 00000000-0000-0000-0000-000000000000)."
+  }
+}
+
 variable "pipelines_host_url" {
   description = "The Dataverse API URL for the Pipelines Host environment (e.g., https://org.crm.dynamics.com). Used for OData REST operations."
   type        = string
@@ -153,13 +164,6 @@ variable "enable_redeployment" {
   nullable    = false
 }
 
-variable "enable_sharing" {
-  description = "When `true`, the pipeline will be shared with the Dataverse team specified in `share_with_team_id`. Requires `share_with_team_id` to be set."
-  type        = bool
-  default     = false
-  nullable    = false
-}
-
 variable "lifecycle_state" {
   description = "The desired lifecycle state of all pipeline records. Must be `\"active\"` or `\"inactive\"`."
   type        = string
@@ -180,29 +184,6 @@ variable "pipeline_description" {
   validation {
     condition     = var.pipeline_description == null || length(var.pipeline_description) <= 500
     error_message = "pipeline_description must not exceed 500 characters."
-  }
-}
-
-variable "share_access_mask" {
-  description = "The access level to grant when sharing the pipeline with a team. Must be one of `\"ReadAccess\"`, `\"WriteAccess\"`, or `\"ShareAccess\"`."
-  type        = string
-  default     = "ReadAccess"
-  nullable    = false
-
-  validation {
-    condition     = contains(["ReadAccess", "WriteAccess", "ShareAccess"], var.share_access_mask)
-    error_message = "share_access_mask must be one of: ReadAccess, WriteAccess, ShareAccess."
-  }
-}
-
-variable "share_with_team_id" {
-  description = "The Dataverse team ID (UUID) to share the pipeline with. Required when `enable_sharing = true`."
-  type        = string
-  default     = null
-
-  validation {
-    condition     = var.share_with_team_id == null || can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.share_with_team_id))
-    error_message = "share_with_team_id must be a valid lowercase UUID (e.g., 00000000-0000-0000-0000-000000000000) or null."
   }
 }
 

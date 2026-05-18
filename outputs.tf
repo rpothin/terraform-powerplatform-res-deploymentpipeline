@@ -28,7 +28,7 @@ output "pipeline_name" {
   value       = var.pipeline_name
 }
 
-output "sharing_enabled" {
-  description = "Whether the pipeline was shared with a Dataverse team."
-  value       = local.sharing_enabled
+output "pipeline_team_id" {
+  description = "The Dataverse record ID of the team created for the Entra ID security group."
+  value       = powerplatform_data_record.pipeline_team.id
 }

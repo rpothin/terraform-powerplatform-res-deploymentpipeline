@@ -51,10 +51,8 @@ module "deployment_pipeline" {
 
   enable_ai_deployment_notes = true
   enable_redeployment        = true
-  enable_sharing             = var.enable_sharing
   lifecycle_state            = "active"
   pipeline_description       = var.pipeline_description
-  share_access_mask          = "ReadAccess"
-  share_with_team_id         = var.share_with_team_id
+  security_group_id          = var.security_group_id
   validation_wait_seconds    = 30
 }

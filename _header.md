@@ -1,6 +1,6 @@
 # terraform-powerplatform-res-deploymentpipeline
 
-Terraform module for configuring a Power Platform Custom Pipelines deployment pipeline, including environment registration, pipeline creation, stage setup, and optional sharing — all managed as Dataverse records in a Pipelines Host environment.
+Terraform module for configuring a Power Platform Custom Pipelines deployment pipeline, including environment registration, pipeline creation, stage setup, and mandatory Entra ID security group sharing — all managed as Dataverse records in a Pipelines Host environment.
 
 ## What this module manages
 
@@ -9,7 +9,7 @@ This module automates all four configuration steps of a Power Platform Custom Pi
 1. **Environment registration** — Registers pre-existing Power Platform environments as `deploymentenvironment` Dataverse records in the Pipelines Host. Includes async validation detection to ensure each environment passes Pipelines Host validation before the pipeline is created.
 2. **Pipeline creation** — Creates the `deploymentpipeline` Dataverse record.
 3. **Stage setup** — Links the dev (source) environment to the pipeline and creates an ordered linear chain of `deploymentstage` records. Supports 1–6 target stages.
-4. **Pipeline sharing** (optional) — Shares the pipeline with a Dataverse team via `GrantAccess`.
+4. **Pipeline sharing** — Creates a Dataverse team backed by the provided Entra ID security group, assigns the "Deployment Pipeline User" security role, and shares the pipeline with the team.
 
 ## Prerequisites
 
@@ -17,6 +17,7 @@ This module automates all four configuration steps of a Power Platform Custom Pi
 - All Power Platform environments to be registered must already exist
 - The caller must have Dataverse system user access to the Pipelines Host environment
 - The Power Platform Terraform provider must be authenticated (OIDC recommended)
+- A security group must exist in Entra ID (Azure AD) to back the pipeline access team
 
 ## Authentication
 

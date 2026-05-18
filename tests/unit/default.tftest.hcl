@@ -1,4 +1,15 @@
-mock_provider "powerplatform" {}
+mock_provider "powerplatform" {
+  mock_data "powerplatform_data_records" {
+    defaults = {
+      rows = [
+        {
+          businessunitid   = "00000000-0000-0000-0000-000000000099"
+          validationstatus = "200000001"
+        }
+      ]
+    }
+  }
+}
 
 variables {
   dev_environment_key  = "dev"
@@ -6,6 +17,7 @@ variables {
   owner_system_user_id = "22222222-2222-2222-2222-222222222222"
   pipeline_name        = "My Pipeline"
   pipelines_host_url   = "https://org.crm.dynamics.com"
+  security_group_id    = "cccccccc-cccc-cccc-cccc-cccccccccccc"
 
   environments = {
     dev = {
@@ -114,14 +126,14 @@ run "rejects_invalid_lifecycle_state" {
   expect_failures = [var.lifecycle_state]
 }
 
-run "rejects_invalid_share_access_mask" {
+run "rejects_invalid_security_group_id" {
   command = plan
 
   variables {
-    share_access_mask = "AdminAccess"
+    security_group_id = "not-a-uuid"
   }
 
-  expect_failures = [var.share_access_mask]
+  expect_failures = [var.security_group_id]
 }
 
 run "rejects_invalid_validation_wait_seconds" {
@@ -242,17 +254,6 @@ run "rejects_duplicate_stage_keys" {
 
 run "accepts_valid_minimal_configuration" {
   command = plan
-}
-
-run "rejects_sharing_enabled_without_team_id" {
-  command = plan
-
-  variables {
-    enable_sharing     = true
-    share_with_team_id = null
-  }
-
-  expect_failures = [terraform_data.validate_sharing]
 }
 
 run "rejects_dev_key_not_in_environments" {

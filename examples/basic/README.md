@@ -52,6 +52,12 @@ Description: The Dataverse API URL for the Pipelines Host environment.
 
 Type: `string`
 
+### <a name="input_security_group_id"></a> [security\_group\_id](#input\_security\_group\_id)
+
+Description: The Entra ID security group object ID to grant pipeline access.
+
+Type: `string`
+
 ### <a name="input_test_environment_id"></a> [test\_environment\_id](#input\_test\_environment\_id)
 
 Description: The Power Platform environment ID of the test environment.

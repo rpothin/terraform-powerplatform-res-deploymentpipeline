@@ -58,6 +58,12 @@ Description: The Power Platform environment ID of the production environment.
 
 Type: `string`
 
+### <a name="input_security_group_id"></a> [security\_group\_id](#input\_security\_group\_id)
+
+Description: The Entra ID security group object ID to grant pipeline access.
+
+Type: `string`
+
 ### <a name="input_staging_environment_id"></a> [staging\_environment\_id](#input\_staging\_environment\_id)
 
 Description: The Power Platform environment ID of the staging environment.
@@ -74,25 +80,9 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
-### <a name="input_enable_sharing"></a> [enable\_sharing](#input\_enable\_sharing)
-
-Description: Whether to share the pipeline with a Dataverse team.
-
-Type: `bool`
-
-Default: `false`
-
 ### <a name="input_pipeline_description"></a> [pipeline\_description](#input\_pipeline\_description)
 
 Description: An optional description for the deployment pipeline.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_share_with_team_id"></a> [share\_with\_team\_id](#input\_share\_with\_team\_id)
-
-Description: The Dataverse team ID to share the pipeline with.
 
 Type: `string`
 

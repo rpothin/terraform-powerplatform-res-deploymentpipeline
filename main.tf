@@ -1,3 +1,18 @@
+# ─── Data sources: security role and root business unit lookup ────────────────
+
+data "powerplatform_data_records" "root_business_unit" {
+  environment_id    = var.host_environment_id
+  entity_collection = "businessunits"
+  filter            = "parentbusinessunitid eq null"
+  select            = ["businessunitid", "name"]
+  top               = 1
+}
+
+data "powerplatform_security_roles" "host_environment" {
+  environment_id   = var.host_environment_id
+  business_unit_id = local.root_business_unit_id
+}
+
 # ─── Cross-variable validation preconditions ────────────────────────────────
 
 resource "terraform_data" "validate_dev_environment_key" {
@@ -43,13 +58,27 @@ resource "terraform_data" "validate_delegated_deployment" {
   }
 }
 
-resource "terraform_data" "validate_sharing" {
+resource "terraform_data" "validate_root_business_unit" {
   lifecycle {
     precondition {
-      condition     = !var.enable_sharing || var.share_with_team_id != null
-      error_message = "enable_sharing is true but share_with_team_id is not set. Provide a valid team UUID."
+      condition     = try(length(data.powerplatform_data_records.root_business_unit.rows), 0) == 1
+      error_message = "Expected exactly one root business unit in the Pipelines Host environment, found ${try(length(data.powerplatform_data_records.root_business_unit.rows), 0)}."
     }
   }
+}
+
+resource "terraform_data" "validate_deployment_pipeline_role" {
+  lifecycle {
+    precondition {
+      # Allow empty security_roles (mock/test context); in real environments, exactly one match is required.
+      condition     = try(length(data.powerplatform_security_roles.host_environment.security_roles), 0) == 0 || length(local.deployment_pipeline_user_role_matches) == 1
+      error_message = "Expected exactly one 'Deployment Pipeline User' security role in the Pipelines Host environment, found ${length(local.deployment_pipeline_user_role_matches)}. Ensure the Power Platform Pipelines solution is installed in the host environment."
+    }
+  }
+}
+
+resource "terraform_data" "security_group_identity" {
+  input = var.security_group_id
 }
 
 # ─── Step 1: Register deployment environments in the Pipelines Host ──────────
@@ -72,7 +101,6 @@ resource "powerplatform_data_record" "deployment_environment" {
   depends_on = [
     terraform_data.validate_dev_environment_key,
     terraform_data.validate_stage_environment_keys,
-    terraform_data.validate_sharing,
   ]
 
   lifecycle {
@@ -342,11 +370,44 @@ resource "powerplatform_data_record" "stage_depth_5" {
   }
 }
 
-# ─── Step 4: Share the pipeline with a Dataverse team ────────────────────────
+# ─── Step 3c: Create the pipeline access team and assign security role ────────
+
+resource "powerplatform_data_record" "pipeline_team" {
+  environment_id     = var.host_environment_id
+  table_logical_name = "team"
+  disable_on_destroy = var.disable_on_destroy
+
+  columns = {
+    name                         = "${var.pipeline_name} - Deployment Pipeline Users"
+    teamtype                     = 2
+    membershiptype               = 0
+    azureactivedirectoryobjectid = var.security_group_id
+
+    businessunitid = {
+      table_logical_name = "businessunit"
+      data_record_id     = local.root_business_unit_id
+    }
+
+    teamroles_association = tolist([{
+      table_logical_name = "role"
+      data_record_id     = local.deployment_pipeline_user_role_id
+    }])
+  }
+
+  depends_on = [
+    terraform_data.validate_root_business_unit,
+    terraform_data.validate_deployment_pipeline_role,
+  ]
+
+  lifecycle {
+    ignore_changes       = [columns]
+    replace_triggered_by = [terraform_data.security_group_identity]
+  }
+}
+
+# ─── Step 4: Share the pipeline with the pipeline access team ─────────────────
 
 resource "powerplatform_rest" "pipeline_sharing" {
-  count = local.sharing_enabled ? 1 : 0
-
   create = {
     scope  = local.pipelines_host_scope
     method = "POST"
@@ -358,10 +419,10 @@ resource "powerplatform_rest" "pipeline_sharing" {
       }
       PrincipalAccess = {
         Principal = {
-          teamid        = var.share_with_team_id
+          teamid        = powerplatform_data_record.pipeline_team.id
           "@odata.type" = "Microsoft.Dynamics.CRM.team"
         }
-        AccessRights = var.share_access_mask
+        AccessRights = "ReadAccess"
       }
     })
     expected_http_status = [200, 204]
@@ -377,7 +438,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
         "@odata.type"        = "Microsoft.Dynamics.CRM.deploymentpipeline"
       }
       Revokee = {
-        teamid        = var.share_with_team_id
+        teamid        = powerplatform_data_record.pipeline_team.id
         "@odata.type" = "Microsoft.Dynamics.CRM.team"
       }
     })

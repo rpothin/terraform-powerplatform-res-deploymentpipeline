@@ -16,6 +16,7 @@ module "deployment_pipeline" {
   owner_system_user_id = var.owner_system_user_id
   pipeline_name        = var.pipeline_name
   pipelines_host_url   = var.pipelines_host_url
+  security_group_id    = var.security_group_id
 
   environments = {
     dev = {

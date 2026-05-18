@@ -2,13 +2,21 @@ locals {
   deployment_environment_statecode  = var.lifecycle_state == "active" ? 0 : 1
   deployment_environment_statuscode = var.lifecycle_state == "active" ? 1 : 2
 
+  deployment_pipeline_user_role_matches = try([
+    for role in data.powerplatform_security_roles.host_environment.security_roles :
+    role.role_id
+    if role.name == "Deployment Pipeline User"
+  ], [])
+
+  deployment_pipeline_user_role_id = length(local.deployment_pipeline_user_role_matches) == 1 ? local.deployment_pipeline_user_role_matches[0] : null
+
   pipeline_statecode  = var.lifecycle_state == "active" ? 0 : 1
   pipeline_statuscode = var.lifecycle_state == "active" ? 1 : 2
 
   pipelines_host_url_normalized = trimsuffix(var.pipelines_host_url, "/")
   pipelines_host_scope          = "${local.pipelines_host_url_normalized}/.default"
 
-  sharing_enabled = var.enable_sharing && var.share_with_team_id != null
+  root_business_unit_id = try(tostring(data.powerplatform_data_records.root_business_unit.rows[0]["businessunitid"]), null)
 
   stage_statecode  = var.lifecycle_state == "active" ? 0 : 1
   stage_statuscode = var.lifecycle_state == "active" ? 1 : 2

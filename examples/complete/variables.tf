@@ -3,12 +3,6 @@ variable "dev_environment_id" {
   type        = string
 }
 
-variable "enable_sharing" {
-  description = "Whether to share the pipeline with a Dataverse team."
-  type        = bool
-  default     = false
-}
-
 variable "host_environment_id" {
   description = "The Power Platform environment ID of the Pipelines Host environment."
   type        = string
@@ -40,10 +34,9 @@ variable "prod_environment_id" {
   type        = string
 }
 
-variable "share_with_team_id" {
-  description = "The Dataverse team ID to share the pipeline with."
+variable "security_group_id" {
+  description = "The Entra ID security group object ID to grant pipeline access."
   type        = string
-  default     = null
 }
 
 variable "staging_environment_id" {
