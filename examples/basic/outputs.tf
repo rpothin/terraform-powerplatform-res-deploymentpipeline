@@ -1,9 +1,9 @@
-output "resource_id" {
-  description = "The ID of the managed resource."
-  value       = module.this.resource_id
+output "pipeline_id" {
+  description = "The Dataverse record ID of the deployment pipeline."
+  value       = module.deployment_pipeline.pipeline_id
 }
 
-output "name" {
-  description = "The name of the managed resource."
-  value       = module.this.name
+output "deployment_stage_ids" {
+  description = "The Dataverse deployment stage IDs keyed by environment key."
+  value       = module.deployment_pipeline.deployment_stage_ids
 }

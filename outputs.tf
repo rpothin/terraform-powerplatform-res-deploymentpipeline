@@ -1,11 +1,34 @@
-# TODO: Replace these placeholder outputs with actual resource attributes.
-
-output "resource_id" {
-  description = "The ID of the managed resource."
-  value       = null # Replace with actual resource ID, e.g., powerplatform_environment.this.id
+output "deployment_environment_ids" {
+  description = "A map from environment key to the Dataverse `deploymentenvironment` record ID for each registered environment."
+  value = {
+    for k, record in powerplatform_data_record.deployment_environment :
+    k => record.id
+  }
 }
 
-output "name" {
-  description = "The name of the managed resource."
-  value       = var.name
+output "deployment_stage_ids" {
+  description = "A map from environment key to the Dataverse `deploymentstage` record ID for each pipeline stage."
+  value = merge(
+    { for k, r in powerplatform_data_record.stage_depth_0 : k => r.id },
+    { for k, r in powerplatform_data_record.stage_depth_1 : k => r.id },
+    { for k, r in powerplatform_data_record.stage_depth_2 : k => r.id },
+    { for k, r in powerplatform_data_record.stage_depth_3 : k => r.id },
+    { for k, r in powerplatform_data_record.stage_depth_4 : k => r.id },
+    { for k, r in powerplatform_data_record.stage_depth_5 : k => r.id },
+  )
+}
+
+output "pipeline_id" {
+  description = "The Dataverse record ID of the deployment pipeline."
+  value       = powerplatform_data_record.pipeline.id
+}
+
+output "pipeline_name" {
+  description = "The display name of the deployment pipeline."
+  value       = var.pipeline_name
+}
+
+output "sharing_enabled" {
+  description = "Whether the pipeline was shared with a Dataverse team."
+  value       = local.sharing_enabled
 }

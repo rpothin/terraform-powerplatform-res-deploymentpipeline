@@ -1,3 +1,3 @@
 # Basic Example
 
-This example demonstrates the minimal configuration required to use this module.
+This example creates a minimal development-to-test deployment pipeline.

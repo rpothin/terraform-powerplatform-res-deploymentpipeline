@@ -1,12 +1,60 @@
-# TODO (before publishing): Replace the source path below with the Terraform Registry
-# address once the module is published, e.g.:
-#   source  = "rpothin/<module-name>/powerplatform"
-#   version = "~> 0.1"
-# See: https://developer.hashicorp.com/terraform/language/modules/develop/structure#examples
-module "this" {
-  source = "../../" # local path for development — update to registry address before publishing
+terraform {
+  required_version = ">= 1.9, < 2.0"
+  required_providers {
+    powerplatform = {
+      source  = "microsoft/power-platform"
+      version = "~> 4.0"
+    }
+  }
+}
 
-  name     = var.name
-  location = var.location
-  tags     = var.tags
+module "deployment_pipeline" {
+  source = "../.."
+
+  dev_environment_key  = "dev"
+  host_environment_id  = var.host_environment_id
+  owner_system_user_id = var.owner_system_user_id
+  pipeline_name        = var.pipeline_name
+  pipelines_host_url   = var.pipelines_host_url
+
+  environments = {
+    dev = {
+      id   = var.dev_environment_id
+      name = "Development"
+    }
+    test = {
+      id   = var.test_environment_id
+      name = "Test"
+    }
+    staging = {
+      id   = var.staging_environment_id
+      name = "Staging"
+    }
+    prod = {
+      id   = var.prod_environment_id
+      name = "Production"
+    }
+  }
+
+  pipeline_stages = [
+    {
+      environment_key = "test"
+    },
+    {
+      environment_key = "staging"
+    },
+    {
+      environment_key                = "prod"
+      require_predeployment_approval = true
+    }
+  ]
+
+  enable_ai_deployment_notes = true
+  enable_redeployment        = true
+  enable_sharing             = var.enable_sharing
+  lifecycle_state            = "active"
+  pipeline_description       = var.pipeline_description
+  share_access_mask          = "ReadAccess"
+  share_with_team_id         = var.share_with_team_id
+  validation_wait_seconds    = 30
 }
