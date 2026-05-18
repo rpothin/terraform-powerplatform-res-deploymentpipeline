@@ -52,8 +52,8 @@ resource "terraform_data" "validate_delegated_deployment" {
 
   lifecycle {
     precondition {
-      condition     = each.value.deployment_spn_client_id != null
-      error_message = "pipeline_stages[${each.key}] has use_delegated_deployment = true but deployment_spn_client_id is not set."
+      condition     = each.value.deployment_spn_system_user_id != null
+      error_message = "pipeline_stages[${each.key}] has use_delegated_deployment = true but deployment_spn_system_user_id is not set."
     }
   }
 }
@@ -208,7 +208,7 @@ resource "powerplatform_data_record" "stage_depth_0" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[0].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[0].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[0].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[0].description
     isautomateddeployment        = var.pipeline_stages[0].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[0].is_sharing_enabled
@@ -240,7 +240,7 @@ resource "powerplatform_data_record" "stage_depth_1" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[1].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[1].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[1].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[1].description
     isautomateddeployment        = var.pipeline_stages[1].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[1].is_sharing_enabled
@@ -268,7 +268,7 @@ resource "powerplatform_data_record" "stage_depth_2" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[2].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[2].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[2].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[2].description
     isautomateddeployment        = var.pipeline_stages[2].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[2].is_sharing_enabled
@@ -296,7 +296,7 @@ resource "powerplatform_data_record" "stage_depth_3" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[3].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[3].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[3].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[3].description
     isautomateddeployment        = var.pipeline_stages[3].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[3].is_sharing_enabled
@@ -324,7 +324,7 @@ resource "powerplatform_data_record" "stage_depth_4" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[4].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[4].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[4].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[4].description
     isautomateddeployment        = var.pipeline_stages[4].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[4].is_sharing_enabled
@@ -352,7 +352,7 @@ resource "powerplatform_data_record" "stage_depth_5" {
   columns = {
     deploymentenvironmentid      = "/deploymentenvironments(${powerplatform_data_record.deployment_environment[each.key].id})"
     deploymentpipelineid         = "/deploymentpipelines(${powerplatform_data_record.pipeline.id})"
-    deploymentserviceprincipalid = var.pipeline_stages[5].deployment_spn_client_id
+    deploymentserviceprincipalid = var.pipeline_stages[5].deployment_spn_system_user_id != null ? "/systemusers(${var.pipeline_stages[5].deployment_spn_system_user_id})" : null
     description                  = var.pipeline_stages[5].description
     isautomateddeployment        = var.pipeline_stages[5].use_delegated_deployment
     issharingenabled             = var.pipeline_stages[5].is_sharing_enabled

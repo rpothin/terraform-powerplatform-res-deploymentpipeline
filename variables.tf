@@ -86,7 +86,7 @@ Maximum 6 stages supported.
 
 - `environment_key`                - (Required) Key in the `environments` map for the target environment.
 - `description`                    - (Optional) Description for this stage.
-- `deployment_spn_client_id`       - (Optional) Service principal client ID for delegated deployment. Required when `use_delegated_deployment = true`.
+- `deployment_spn_system_user_id`  - (Optional) The Dataverse system user record ID (UUID of the `systemuser` record for the registered application user in Dataverse) used for delegated deployment. Required when `use_delegated_deployment = true`. This is **not** the Azure AD application/client ID — it is the `systemuserid` of the application user record in the Pipelines Host Dataverse environment.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
 - `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
@@ -95,7 +95,7 @@ DESCRIPTION
   type = list(object({
     environment_key                = string
     description                    = optional(string)
-    deployment_spn_client_id       = optional(string)
+    deployment_spn_system_user_id  = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
     require_preexport_approval     = optional(bool, true)

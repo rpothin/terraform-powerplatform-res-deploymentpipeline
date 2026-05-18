@@ -121,7 +121,7 @@ Maximum 6 stages supported.
 
 - `environment_key`                - (Required) Key in the `environments` map for the target environment.
 - `description`                    - (Optional) Description for this stage.
-- `deployment_spn_client_id`       - (Optional) Service principal client ID for delegated deployment. Required when `use_delegated_deployment = true`.
+- `deployment_spn_system_user_id`  - (Optional) The Dataverse system user record ID (UUID of the `systemuser` record for the registered application user in Dataverse) used for delegated deployment. Required when `use_delegated_deployment = true`. This is **not** the Azure AD application/client ID — it is the `systemuserid` of the application user record in the Pipelines Host Dataverse environment.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
 - `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
@@ -133,7 +133,7 @@ Type:
 list(object({
     environment_key                = string
     description                    = optional(string)
-    deployment_spn_client_id       = optional(string)
+    deployment_spn_system_user_id  = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
     require_preexport_approval     = optional(bool, true)
@@ -240,6 +240,19 @@ Description: The Dataverse record ID of the team created for the Entra ID securi
 ## Modules
 
 No modules.
+
+## Future Roadmap
+
+The items below represent areas under consideration for future versions of this module. They are shared for transparency and community feedback — nothing listed here constitutes a commitment or a release timeline.
+
+| # | Area | Description |
+|---|------|-------------|
+| 1 | **Pipeline extensibility hooks** | Support for cloud flow– or webhook-based pre/post deployment steps per stage (`extend-pipelines` feature). This would allow custom logic to run before or after each deployment without leaving the pipeline orchestration. |
+| 2 | **GitHub solution export integration** | Support for configuring automatic solution export to a GitHub repository as part of the pipeline (`extend-pipelines-github-export` feature), enabling a GitOps-aligned ALM flow directly from Pipelines. |
+| 3 | **Multiple access groups** | The current module accepts a single Entra ID security group. A future version may accept a list to enable finer-grained access control — for example, separate groups per stage or per role (approver vs. deployer). |
+| 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must pre-register the application as an application user in Dataverse and supply its `systemuserid`. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
+
+Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## Known Deviations from AVM
 
