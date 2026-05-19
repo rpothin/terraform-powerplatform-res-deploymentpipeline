@@ -73,9 +73,9 @@ An ordered list of deployment pipeline stages. Each entry configures one target 
 The list position determines the deployment order (index 0 = first stage after dev, index N = Nth target stage).
 Maximum 6 stages supported.
 
-- `environment_key`                - (Required) Key in the `environments` map for the target environment.
-- `description`                    - (Optional) Description for this stage.
-- `deployment_spn_system_user_id`  - (Optional) The Dataverse system user record ID (UUID of the `systemuser` record for the registered application user in Dataverse) used for delegated deployment. Required when `use_delegated_deployment = true`. This is **not** the Azure AD application/client ID — it is the `systemuserid` of the application user record in the Pipelines Host Dataverse environment.
+- `environment_key`           - (Required) Key in the `environments` map for the target environment.
+- `description`               - (Optional) Description for this stage.
+- `deployment_spn_client_id`  - (Optional) The Azure AD client ID (application ID) of the service principal used for delegated deployments. Required when `use_delegated_deployment = true`. This maps to the `spnclientid` field on the `deploymentstage` Dataverse table.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
 - `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
@@ -84,7 +84,7 @@ DESCRIPTION
   type = list(object({
     environment_key                = string
     description                    = optional(string)
-    deployment_spn_system_user_id  = optional(string)
+    deployment_spn_client_id       = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
     require_preexport_approval     = optional(bool, true)
@@ -107,6 +107,14 @@ DESCRIPTION
       for s in var.pipeline_stages : s.environment_key
     ]))
     error_message = "Each pipeline stage must reference a unique environment_key. Duplicate environment keys are not allowed."
+  }
+
+  validation {
+    condition = alltrue([
+      for s in var.pipeline_stages :
+      s.deployment_spn_client_id == null || can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", s.deployment_spn_client_id))
+    ])
+    error_message = "All deployment_spn_client_id values must be valid lowercase UUIDs (e.g., 00000000-0000-0000-0000-000000000000) or null."
   }
 }
 
@@ -134,6 +142,13 @@ variable "pipelines_host_url" {
 
 variable "disable_on_destroy" {
   description = "When `true`, Dataverse records (pipeline, environments, stages) are deactivated rather than deleted on `terraform destroy`. This is the safer default for production Pipelines Host environments."
+  type        = bool
+  default     = true
+  nullable    = false
+}
+
+variable "enable_ai_deployment_notes" {
+  description = "When `true`, AI-generated deployment notes are enabled for the pipeline."
   type        = bool
   default     = true
   nullable    = false

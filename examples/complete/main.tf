@@ -48,9 +48,10 @@ module "deployment_pipeline" {
     }
   ]
 
-  enable_redeployment     = true
-  lifecycle_state         = "active"
-  pipeline_description    = var.pipeline_description
-  security_group_id       = var.security_group_id
-  validation_wait_seconds = 30
+  enable_ai_deployment_notes = true
+  enable_redeployment        = true
+  lifecycle_state            = "active"
+  pipeline_description       = var.pipeline_description
+  security_group_id          = var.security_group_id
+  validation_wait_seconds    = 30
 }

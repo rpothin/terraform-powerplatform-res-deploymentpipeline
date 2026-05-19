@@ -278,3 +278,29 @@ run "rejects_dev_key_used_as_stage" {
 
   expect_failures = [terraform_data.validate_stage_environment_keys]
 }
+
+run "rejects_invalid_deployment_spn_client_id" {
+  command = plan
+
+  variables {
+    environments = {
+      dev = {
+        id   = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        name = "Development"
+      }
+      test = {
+        id   = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+        name = "Test"
+      }
+    }
+
+    pipeline_stages = [
+      {
+        environment_key          = "test"
+        deployment_spn_client_id = "not-a-uuid"
+      }
+    ]
+  }
+
+  expect_failures = [var.pipeline_stages]
+}

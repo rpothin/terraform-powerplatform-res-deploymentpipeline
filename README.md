@@ -119,9 +119,9 @@ Description: An ordered list of deployment pipeline stages. Each entry configure
 The list position determines the deployment order (index 0 = first stage after dev, index N = Nth target stage).  
 Maximum 6 stages supported.
 
-- `environment_key`                - (Required) Key in the `environments` map for the target environment.
-- `description`                    - (Optional) Description for this stage.
-- `deployment_spn_system_user_id`  - (Optional) The Dataverse system user record ID (UUID of the `systemuser` record for the registered application user in Dataverse) used for delegated deployment. Required when `use_delegated_deployment = true`. This is **not** the Azure AD application/client ID — it is the `systemuserid` of the application user record in the Pipelines Host Dataverse environment.
+- `environment_key`           - (Required) Key in the `environments` map for the target environment.
+- `description`               - (Optional) Description for this stage.
+- `deployment_spn_client_id`  - (Optional) The Azure AD client ID (application ID) of the service principal used for delegated deployments. Required when `use_delegated_deployment = true`. This maps to the `spnclientid` field on the `deploymentstage` Dataverse table.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
 - `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
@@ -133,7 +133,7 @@ Type:
 list(object({
     environment_key                = string
     description                    = optional(string)
-    deployment_spn_system_user_id  = optional(string)
+    deployment_spn_client_id       = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
     require_preexport_approval     = optional(bool, true)
@@ -160,6 +160,14 @@ The following input variables are optional (have default values):
 ### <a name="input_disable_on_destroy"></a> [disable\_on\_destroy](#input\_disable\_on\_destroy)
 
 Description: When `true`, Dataverse records (pipeline, environments, stages) are deactivated rather than deleted on `terraform destroy`. This is the safer default for production Pipelines Host environments.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_enable_ai_deployment_notes"></a> [enable\_ai\_deployment\_notes](#input\_enable\_ai\_deployment\_notes)
+
+Description: When `true`, AI-generated deployment notes are enabled for the pipeline.
 
 Type: `bool`
 
@@ -234,9 +242,8 @@ The items below represent areas under consideration for future versions of this 
 | 1 | **Pipeline extensibility hooks** | Support for cloud flow– or webhook-based pre/post deployment steps per stage (`extend-pipelines` feature). This would allow custom logic to run before or after each deployment without leaving the pipeline orchestration. |
 | 2 | **GitHub solution export integration** | Support for configuring automatic solution export to a GitHub repository as part of the pipeline (`extend-pipelines-github-export` feature), enabling a GitOps-aligned ALM flow directly from Pipelines. |
 | 3 | **Multiple access groups** | The current module accepts a single Entra ID security group. A future version may accept a list to enable finer-grained access control — for example, separate groups per stage or per role (approver vs. deployer). |
-| 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must pre-register the application as an application user in Dataverse and supply its `systemuserid`. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
+| 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must supply the Azure AD client ID (`deployment_spn_client_id`) of a service principal already registered as an application user in Dataverse. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
 | 5 | **Record ownership (`ownerid`)** | Explicitly setting the owner of Dataverse records created by this module is not currently supported. The Power Platform provider serialises the `ownerid` lookup column in a format rejected by the `deploymentenvironment`, `deploymentpipeline`, and `deploymentstage` Dataverse entities. Records are owned by the identity running Terraform apply. This will be re-evaluated once provider-level support for lookup-column object format is confirmed. |
-| 6 | **AI-generated deployment notes** | The `isdeploymentnotesandaiinsights` column on the `deploymentpipeline` Dataverse table is not available in all Pipelines Host environments (requires specific licensing or regional availability). Enabling AI deployment notes will be re-introduced once the column can be reliably detected or is universally available. |
 
 Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
