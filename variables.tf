@@ -139,13 +139,6 @@ variable "disable_on_destroy" {
   nullable    = false
 }
 
-variable "enable_ai_deployment_notes" {
-  description = "When `true`, AI-generated deployment notes are enabled for the pipeline."
-  type        = bool
-  default     = true
-  nullable    = false
-}
-
 variable "enable_redeployment" {
   description = "When `true`, the pipeline allows redeploying the same solution version to a target environment."
   type        = bool

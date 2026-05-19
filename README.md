@@ -165,14 +165,6 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_enable_ai_deployment_notes"></a> [enable\_ai\_deployment\_notes](#input\_enable\_ai\_deployment\_notes)
-
-Description: When `true`, AI-generated deployment notes are enabled for the pipeline.
-
-Type: `bool`
-
-Default: `true`
-
 ### <a name="input_enable_redeployment"></a> [enable\_redeployment](#input\_enable\_redeployment)
 
 Description: When `true`, the pipeline allows redeploying the same solution version to a target environment.
@@ -244,6 +236,7 @@ The items below represent areas under consideration for future versions of this 
 | 3 | **Multiple access groups** | The current module accepts a single Entra ID security group. A future version may accept a list to enable finer-grained access control — for example, separate groups per stage or per role (approver vs. deployer). |
 | 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must pre-register the application as an application user in Dataverse and supply its `systemuserid`. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
 | 5 | **Record ownership (`ownerid`)** | Explicitly setting the owner of Dataverse records created by this module is not currently supported. The Power Platform provider serialises the `ownerid` lookup column in a format rejected by the `deploymentenvironment`, `deploymentpipeline`, and `deploymentstage` Dataverse entities. Records are owned by the identity running Terraform apply. This will be re-evaluated once provider-level support for lookup-column object format is confirmed. |
+| 6 | **AI-generated deployment notes** | The `isdeploymentnotesandaiinsights` column on the `deploymentpipeline` Dataverse table is not available in all Pipelines Host environments (requires specific licensing or regional availability). Enabling AI deployment notes will be re-introduced once the column can be reliably detected or is universally available. |
 
 Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 

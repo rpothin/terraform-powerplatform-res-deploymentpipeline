@@ -159,12 +159,11 @@ resource "powerplatform_data_record" "pipeline" {
   disable_on_destroy = var.disable_on_destroy
 
   columns = {
-    description                    = var.pipeline_description
-    isdeploymentnotesandaiinsights = var.enable_ai_deployment_notes
-    isredeploymentenabled          = var.enable_redeployment
-    name                           = var.pipeline_name
-    statecode                      = local.pipeline_statecode
-    statuscode                     = local.pipeline_statuscode
+    description           = var.pipeline_description
+    isredeploymentenabled = var.enable_redeployment
+    name                  = var.pipeline_name
+    statecode             = local.pipeline_statecode
+    statuscode            = local.pipeline_statuscode
   }
 
   depends_on = [terraform_data.validation_assertion]
