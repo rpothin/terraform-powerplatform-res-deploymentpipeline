@@ -18,6 +18,11 @@ variables {
   pipeline_name           = "tftest-deployment-pipeline"
   validation_wait_seconds = 60
 
+  # Use hard delete so teardown sends HTTP DELETE rather than soft-deactivate (PATCH statecode=1).
+  # Soft-deactivation triggers a Dataverse plugin on deploymentstage that violates a unique
+  # constraint (0x80073002) when stale records from previous CI runs exist in the same host.
+  disable_on_destroy = false
+
   pipeline_stages = [
     {
       environment_key = "test"
