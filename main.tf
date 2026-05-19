@@ -13,6 +13,21 @@ data "powerplatform_security_roles" "host_environment" {
   business_unit_id = local.root_business_unit_id
 }
 
+# Idempotent: check whether a deploymentenvironment record already exists for each PP environment.
+# A Power Platform System plugin bug (0x80073002) prevents deletion of deploymentstage and
+# deploymentpipeline records, so terraform destroy/test teardown always fails partway through,
+# leaving deploymentenvironment records orphaned. The next apply/test run would hit the Dataverse
+# unique constraint on environmentid (0x80040265) if we tried to create duplicates.
+data "powerplatform_data_records" "existing_deployment_environment" {
+  for_each = var.environments
+
+  environment_id    = var.host_environment_id
+  entity_collection = "deploymentenvironments"
+  filter            = "environmentid eq '${each.value.id}'"
+  select            = ["deploymentenvironmentid", "statecode"]
+  top               = 1
+}
+
 # ─── Cross-variable validation preconditions ────────────────────────────────
 
 resource "terraform_data" "validate_dev_environment_key" {
@@ -84,7 +99,11 @@ resource "terraform_data" "security_group_identity" {
 # ─── Step 1: Register deployment environments in the Pipelines Host ──────────
 
 resource "powerplatform_data_record" "deployment_environment" {
-  for_each = var.environments
+  # Only create records that do not already exist in the Pipelines Host.
+  for_each = {
+    for k, v in var.environments : k => v
+    if local.existing_deployment_environment_id[k] == null
+  }
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentenvironment"
@@ -115,13 +134,15 @@ resource "terraform_data" "wait_for_validation" {
   for_each = var.environments
 
   triggers_replace = [
-    powerplatform_data_record.deployment_environment[each.key].id,
+    local.resolved_deployment_environment_id[each.key],
     var.validation_wait_seconds,
   ]
 
   provisioner "local-exec" {
     command = "sleep ${var.validation_wait_seconds}"
   }
+
+  depends_on = [powerplatform_data_record.deployment_environment]
 }
 
 data "powerplatform_data_records" "environment_validation" {
@@ -129,7 +150,7 @@ data "powerplatform_data_records" "environment_validation" {
 
   environment_id    = var.host_environment_id
   entity_collection = "deploymentenvironments"
-  filter            = "deploymentenvironmentid eq ${powerplatform_data_record.deployment_environment[each.key].id}"
+  filter            = "deploymentenvironmentid eq ${local.resolved_deployment_environment_id[each.key]}"
   select            = ["deploymentenvironmentid", "validationstatus"]
 
   depends_on = [terraform_data.wait_for_validation]
@@ -182,7 +203,7 @@ resource "powerplatform_rest" "dev_link" {
     method = "POST"
     url    = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref"
     body = jsonencode({
-      "@odata.id" = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
+      "@odata.id" = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${local.resolved_deployment_environment_id[var.dev_environment_key]})"
     })
     expected_http_status = [204]
   }
@@ -190,7 +211,7 @@ resource "powerplatform_rest" "dev_link" {
   destroy = {
     scope                = local.pipelines_host_scope
     method               = "DELETE"
-    url                  = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${powerplatform_data_record.deployment_environment[var.dev_environment_key].id})"
+    url                  = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${local.resolved_deployment_environment_id[var.dev_environment_key]})"
     body                 = ""
     expected_http_status = [204]
   }
@@ -221,7 +242,7 @@ resource "powerplatform_data_record" "stage_depth_0" {
     statuscode                = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 
@@ -262,7 +283,7 @@ resource "powerplatform_data_record" "stage_depth_1" {
     statuscode  = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 
@@ -298,7 +319,7 @@ resource "powerplatform_data_record" "stage_depth_2" {
     statuscode  = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 
@@ -334,7 +355,7 @@ resource "powerplatform_data_record" "stage_depth_3" {
     statuscode  = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 
@@ -370,7 +391,7 @@ resource "powerplatform_data_record" "stage_depth_4" {
     statuscode  = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 
@@ -406,7 +427,7 @@ resource "powerplatform_data_record" "stage_depth_5" {
     statuscode  = local.stage_statuscode
     targetdeploymentenvironmentid = {
       table_logical_name = "deploymentenvironment"
-      data_record_id     = powerplatform_data_record.deployment_environment[each.key].id
+      data_record_id     = local.resolved_deployment_environment_id[each.key]
     }
   }
 

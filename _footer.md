@@ -12,6 +12,15 @@ The items below represent areas under consideration for future versions of this 
 
 Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
+## Known Platform Limitations
+
+These are known limitations in the Power Platform API that affect this module's behavior. They are not bugs in the module itself.
+
+| # | Limitation | Impact | Workaround |
+|---|-----------|--------|------------|
+| L1 | **`deploymentpipeline` and `deploymentstage` records cannot be deleted via API** | A Microsoft System plugin (`Microsoft.Crm.ObjectModel.CustomBusinessEntityService`) fires on DELETE and PATCH-to-deactivate of these record types, returning error `0x80073002` (duplicate unique constraint violation). This also occurs from the Power Platform UI. | Records remain in the Pipelines Host after `terraform destroy`. Manual cleanup via the Pipelines Host UI is not possible for these record types. `terraform destroy` will fail on the stage/pipeline deletion step — this is expected. |
+| L2 | **`deploymentenvironment` records cannot be cleaned up by teardown** | Because teardown fails at stage deletion (L1), Terraform stops before reaching `deploymentenvironment` destroy calls. On a fresh apply in the same host, Dataverse duplicate detection (`0x80040265`) would block creating the same environment registration again. | This module performs a **find-or-create** check: before creating a `deploymentenvironment` record, it queries for an existing active record with the same `environmentid`. If found, the existing record is reused. This makes repeated applies idempotent even after failed teardowns. |
+
 ## Known Deviations from AVM
 
 | ID | Specification | Deviation | Rationale |

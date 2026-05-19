@@ -1,9 +1,6 @@
 output "deployment_environment_ids" {
   description = "A map from environment key to the Dataverse `deploymentenvironment` record ID for each registered environment."
-  value = {
-    for k, record in powerplatform_data_record.deployment_environment :
-    k => record.id
-  }
+  value       = local.resolved_deployment_environment_id
 }
 
 output "deployment_stage_ids" {

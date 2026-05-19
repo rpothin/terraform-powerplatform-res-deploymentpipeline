@@ -15,7 +15,13 @@ test-unit: init
 	terraform test -test-directory=tests/unit
 
 test-integration: init
-	terraform test -test-directory=tests/integration
+	terraform test -test-directory=tests/integration; \
+	code=$$?; \
+	if [ $$code -eq 2 ]; then \
+		echo "WARNING: Tests passed but Dataverse cleanup failed (known Power Platform API limitation — deploymentpipeline and deploymentstage records cannot be deleted via API)."; \
+		exit 0; \
+	fi; \
+	exit $$code
 
 docs:
 	terraform-docs .
