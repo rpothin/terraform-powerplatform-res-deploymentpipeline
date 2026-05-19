@@ -181,6 +181,7 @@ resource "powerplatform_data_record" "pipeline" {
 
   columns = {
     description             = var.pipeline_description
+    deploymenttype          = 0
     enableaideploymentnotes = var.enable_ai_deployment_notes
     enableredeployment      = var.enable_redeployment
     name                    = var.pipeline_name
@@ -232,6 +233,7 @@ resource "powerplatform_data_record" "stage_depth_0" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[0].description
+    delegateddeploymenttype   = var.pipeline_stages[0].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[0].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[0].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -269,6 +271,7 @@ resource "powerplatform_data_record" "stage_depth_1" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[1].description
+    delegateddeploymenttype   = var.pipeline_stages[1].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[1].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[1].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -305,6 +308,7 @@ resource "powerplatform_data_record" "stage_depth_2" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[2].description
+    delegateddeploymenttype   = var.pipeline_stages[2].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[2].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[2].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -341,6 +345,7 @@ resource "powerplatform_data_record" "stage_depth_3" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[3].description
+    delegateddeploymenttype   = var.pipeline_stages[3].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[3].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[3].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -377,6 +382,7 @@ resource "powerplatform_data_record" "stage_depth_4" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[4].description
+    delegateddeploymenttype   = var.pipeline_stages[4].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[4].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[4].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -413,6 +419,7 @@ resource "powerplatform_data_record" "stage_depth_5" {
       data_record_id     = powerplatform_data_record.pipeline.id
     }
     description               = var.pipeline_stages[5].description
+    delegateddeploymenttype   = var.pipeline_stages[5].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[5].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[5].is_sharing_enabled
     name                      = var.environments[each.key].name
