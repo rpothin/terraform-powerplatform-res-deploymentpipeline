@@ -467,7 +467,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
           teamid        = powerplatform_data_record.pipeline_team.id
           "@odata.type" = "Microsoft.Dynamics.CRM.team"
         }
-        AccessMask = 1
+        AccessMask = "ReadAccess"
       }
     })
     expected_http_status = [200, 204]
