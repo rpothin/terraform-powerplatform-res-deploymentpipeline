@@ -92,9 +92,11 @@ resource "powerplatform_data_record" "deployment_environment" {
 
   columns = {
     environmentid = each.value.id
-    name          = each.value.name
-    statecode     = local.deployment_environment_statecode
-    statuscode    = local.deployment_environment_statuscode
+    # deploymentenvironment.environmenttype: 200000000 = Development, 200000001 = Target
+    environmenttype = each.key == var.dev_environment_key ? 200000000 : 200000001
+    name            = each.value.name
+    statecode       = local.deployment_environment_statecode
+    statuscode      = local.deployment_environment_statuscode
   }
 
   depends_on = [

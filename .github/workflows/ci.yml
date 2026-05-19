@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup Terraform Docs
         run: |
-          TFDOCS_VERSION="v0.21.0"
+          TFDOCS_VERSION="v0.22.0"
           TFDOCS_PKG="terraform-docs-${TFDOCS_VERSION}-linux-amd64.tar.gz"
           curl -sSLo "${TFDOCS_PKG}" "https://github.com/terraform-docs/terraform-docs/releases/download/${TFDOCS_VERSION}/${TFDOCS_PKG}"
           curl -sSLo terraform-docs.sha256sum "https://github.com/terraform-docs/terraform-docs/releases/download/${TFDOCS_VERSION}/terraform-docs-${TFDOCS_VERSION}.sha256sum"
