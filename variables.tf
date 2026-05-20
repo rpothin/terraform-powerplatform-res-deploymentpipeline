@@ -140,13 +140,6 @@ variable "pipelines_host_url" {
   }
 }
 
-variable "disable_on_destroy" {
-  description = "When `true`, Dataverse records (pipeline, environments, stages) are deactivated rather than deleted on `terraform destroy`. This is the safer default for production Pipelines Host environments."
-  type        = bool
-  default     = true
-  nullable    = false
-}
-
 variable "enable_ai_deployment_notes" {
   description = "When `true`, AI-generated deployment notes are enabled for the pipeline."
   type        = bool

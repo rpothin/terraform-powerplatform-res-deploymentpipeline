@@ -118,7 +118,9 @@ resource "powerplatform_data_record" "deployment_environment" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentenvironment"
-  disable_on_destroy = var.disable_on_destroy
+  # Hardcoded to true: deactivates the record (PATCH statecode=1) before deleting it.
+  # This follows the Dataverse lifecycle pattern and avoids plugin failures on hard DELETE.
+  disable_on_destroy = true
 
   columns = {
     environmentid = each.value.id
@@ -188,7 +190,7 @@ EOT
 resource "powerplatform_data_record" "pipeline" {
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentpipeline"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     description             = var.pipeline_description
@@ -236,7 +238,7 @@ resource "powerplatform_data_record" "stage_depth_0" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   # delegateddeploymenttype is intentionally omitted. The provider serializes Terraform null as
   # an empty string "" for option-set/integer columns, which Dataverse rejects (Edm.Int32 cannot
@@ -277,7 +279,7 @@ resource "powerplatform_data_record" "stage_depth_1" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     deploymentpipelineid = {
@@ -313,7 +315,7 @@ resource "powerplatform_data_record" "stage_depth_2" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     deploymentpipelineid = {
@@ -349,7 +351,7 @@ resource "powerplatform_data_record" "stage_depth_3" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     deploymentpipelineid = {
@@ -385,7 +387,7 @@ resource "powerplatform_data_record" "stage_depth_4" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     deploymentpipelineid = {
@@ -421,7 +423,7 @@ resource "powerplatform_data_record" "stage_depth_5" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentstage"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     deploymentpipelineid = {
@@ -460,7 +462,7 @@ resource "powerplatform_data_record" "pipeline_team" {
 
   environment_id     = var.host_environment_id
   table_logical_name = "team"
-  disable_on_destroy = var.disable_on_destroy
+  disable_on_destroy = true
 
   columns = {
     name                         = "${var.pipeline_name} - Deployment Pipeline Users"

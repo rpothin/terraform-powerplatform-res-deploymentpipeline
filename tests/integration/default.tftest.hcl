@@ -20,9 +20,9 @@ variables {
   validation_wait_seconds = 60
 
   # Explicitly disable sharing so this test exercises only core pipeline lifecycle.
-  # With soft deactivation (disable_on_destroy = true, the module default), inactive team records
-  # backed by azureactivedirectoryobjectid may cause uniqueness collisions on subsequent CI runs
-  # in the same host. Sharing is covered by unit tests.
+  # If teardown fails after a Dataverse team is created, the leftover group-backed team record
+  # can cause azureactivedirectoryobjectid uniqueness collisions on subsequent CI runs.
+  # Sharing is covered by unit tests.
   security_group_id = null
 
   pipeline_stages = [
