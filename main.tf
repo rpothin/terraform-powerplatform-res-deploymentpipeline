@@ -1,4 +1,4 @@
-# ─── Data sources: security role and root business unit lookup ──────────────── Test
+# ─── Data sources: security role and root business unit lookup ────────────────
 
 data "powerplatform_data_records" "root_business_unit" {
   environment_id    = var.host_environment_id
