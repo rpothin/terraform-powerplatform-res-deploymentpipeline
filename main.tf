@@ -238,15 +238,15 @@ resource "powerplatform_data_record" "stage_depth_0" {
   table_logical_name = "deploymentstage"
   disable_on_destroy = var.disable_on_destroy
 
-  # delegateddeploymenttype is set only when use_delegated_deployment = true.
-  # Omitting the field (via null) for non-delegated stages matches the UI-created record shape and avoids
-  # a Dataverse plugin constraint error (0x80073002) observed on teardown with value 1.
+  # delegateddeploymenttype is intentionally omitted. The provider serializes Terraform null as
+  # an empty string "" for option-set/integer columns, which Dataverse rejects (Edm.Int32 cannot
+  # convert ""). UI-created records also have this field absent (null server-side). Delegation
+  # behavior is controlled entirely by isdelegateddeployment (boolean).
   columns = {
     deploymentpipelineid = {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[0].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[0].description
     isdelegateddeployment     = var.pipeline_stages[0].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[0].is_sharing_enabled
@@ -284,7 +284,6 @@ resource "powerplatform_data_record" "stage_depth_1" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[1].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[1].description
     isdelegateddeployment     = var.pipeline_stages[1].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[1].is_sharing_enabled
@@ -321,7 +320,6 @@ resource "powerplatform_data_record" "stage_depth_2" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[2].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[2].description
     isdelegateddeployment     = var.pipeline_stages[2].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[2].is_sharing_enabled
@@ -358,7 +356,6 @@ resource "powerplatform_data_record" "stage_depth_3" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[3].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[3].description
     isdelegateddeployment     = var.pipeline_stages[3].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[3].is_sharing_enabled
@@ -395,7 +392,6 @@ resource "powerplatform_data_record" "stage_depth_4" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[4].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[4].description
     isdelegateddeployment     = var.pipeline_stages[4].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[4].is_sharing_enabled
@@ -432,7 +428,6 @@ resource "powerplatform_data_record" "stage_depth_5" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
-    delegateddeploymenttype   = var.pipeline_stages[5].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[5].description
     isdelegateddeployment     = var.pipeline_stages[5].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[5].is_sharing_enabled
