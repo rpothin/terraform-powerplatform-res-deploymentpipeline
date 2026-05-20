@@ -225,7 +225,7 @@ resource "powerplatform_rest" "dev_link" {
     method               = "DELETE"
     url                  = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${local.resolved_deployment_environment_id[var.dev_environment_key]})"
     body                 = ""
-    expected_http_status = [204]
+    expected_http_status = [204, 404]
   }
 }
 

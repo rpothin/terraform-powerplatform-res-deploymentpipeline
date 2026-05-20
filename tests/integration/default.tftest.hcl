@@ -19,10 +19,11 @@ variables {
   pipeline_name           = "tftest-deployment-pipeline"
   validation_wait_seconds = 60
 
-  # Use hard delete so teardown sends HTTP DELETE rather than soft-deactivate (PATCH statecode=1).
-  # Soft-deactivation triggers a Dataverse plugin on deploymentstage that violates a unique
-  # constraint (0x80073002) when stale records from previous CI runs exist in the same host.
-  disable_on_destroy = false
+  # Explicitly disable sharing so this test exercises only core pipeline lifecycle.
+  # With soft deactivation (disable_on_destroy = true, the module default), inactive team records
+  # backed by azureactivedirectoryobjectid may cause uniqueness collisions on subsequent CI runs
+  # in the same host. Sharing is covered by unit tests.
+  security_group_id = null
 
   pipeline_stages = [
     {
