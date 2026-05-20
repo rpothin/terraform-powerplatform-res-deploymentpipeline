@@ -78,7 +78,7 @@ Maximum 6 stages supported.
 - `deployment_spn_client_id`  - (Optional) The Azure AD client ID (application ID) of the service principal used for delegated deployments. Required when `use_delegated_deployment = true`. This maps to the `spnclientid` field on the `deploymentstage` Dataverse table.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
-- `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
+- `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `false`.
 - `use_delegated_deployment`       - (Optional) Whether to use a delegated service principal for deployment. Defaults to `false`.
 DESCRIPTION
   type = list(object({
@@ -87,7 +87,7 @@ DESCRIPTION
     deployment_spn_client_id       = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
-    require_preexport_approval     = optional(bool, true)
+    require_preexport_approval     = optional(bool, false)
     use_delegated_deployment       = optional(bool, false)
   }))
   nullable = false
@@ -119,13 +119,13 @@ DESCRIPTION
 }
 
 variable "security_group_id" {
-  description = "The Entra ID (Azure AD) security group object ID to grant access to the deployment pipeline. The module creates a Dataverse team backed by this group, assigns the 'Deployment Pipeline User' security role, and shares the pipeline with the team."
+  description = "The Entra ID (Azure AD) security group object ID to grant access to the deployment pipeline. When provided, the module creates a Dataverse team backed by this group, assigns the 'Deployment Pipeline User' security role, and shares the pipeline with the team. When omitted, sharing is disabled and only the pipeline records are created."
   type        = string
-  nullable    = false
+  default     = null
 
   validation {
-    condition     = can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.security_group_id))
-    error_message = "security_group_id must be a valid lowercase UUID (e.g., 00000000-0000-0000-0000-000000000000)."
+    condition     = var.security_group_id == null || can(regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", var.security_group_id))
+    error_message = "security_group_id must be a valid lowercase UUID (e.g., 00000000-0000-0000-0000-000000000000) or null."
   }
 }
 

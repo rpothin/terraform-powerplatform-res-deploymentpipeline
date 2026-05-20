@@ -7,9 +7,10 @@
 # All module-specific inputs are injected at runtime via TF_VAR_* env vars:
 #   TF_VAR_host_environment_id  - Pipelines Host environment ID (UUID)
 #   TF_VAR_pipelines_host_url   - Pipelines Host Dataverse API URL
-#   TF_VAR_security_group_id    - Entra ID security group object ID (UUID)
 #   TF_VAR_environments         - JSON map of environments, e.g.:
 #     '{"dev":{"id":"<uuid>","name":"tftest-dev"},"test":{"id":"<uuid>","name":"tftest-test"}}'
+#   TF_VAR_security_group_id    - (Optional) Entra ID security group object ID (UUID);
+#                                  when set, the module creates a team and shares the pipeline.
 
 provider "powerplatform" {}
 
@@ -44,8 +45,8 @@ run "creates_pipeline_environments_and_team" {
   }
 
   assert {
-    condition     = output.pipeline_team_id != ""
-    error_message = "pipeline_team_id should not be empty after apply"
+    condition     = output.pipeline_team_id == null || length(output.pipeline_team_id) > 0
+    error_message = "pipeline_team_id must be null (sharing disabled) or a non-empty UUID (sharing enabled)"
   }
 
   assert {

@@ -26,6 +26,6 @@ output "pipeline_name" {
 }
 
 output "pipeline_team_id" {
-  description = "The Dataverse record ID of the team created for the Entra ID security group."
-  value       = powerplatform_data_record.pipeline_team.id
+  description = "The Dataverse record ID of the team created for the Entra ID security group. Null when `security_group_id` is not provided (sharing disabled)."
+  value       = length(powerplatform_data_record.pipeline_team) > 0 ? powerplatform_data_record.pipeline_team[0].id : null
 }

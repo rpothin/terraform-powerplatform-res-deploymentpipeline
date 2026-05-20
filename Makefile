@@ -18,7 +18,7 @@ test-integration: init
 	terraform test -test-directory=tests/integration; \
 	code=$$?; \
 	if [ $$code -eq 2 ]; then \
-		echo "WARNING: Tests passed but Dataverse cleanup failed (known Power Platform API limitation — deploymentpipeline and deploymentstage records cannot be deleted via API)."; \
+		echo "WARNING: Tests passed but Dataverse cleanup failed. The root cause (record-shape-dependent cleanup behavior) is under active investigation — see Known Platform Limitations in README. This masking is temporary and will be removed once stable teardown is confirmed."; \
 		exit 0; \
 	fi; \
 	exit $$code

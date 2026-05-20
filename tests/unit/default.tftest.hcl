@@ -16,7 +16,6 @@ variables {
   host_environment_id = "11111111-1111-1111-1111-111111111111"
   pipeline_name       = "My Pipeline"
   pipelines_host_url  = "https://org.crm.dynamics.com"
-  security_group_id   = "cccccccc-cccc-cccc-cccc-cccccccccccc"
 
   environments = {
     dev = {
@@ -123,6 +122,22 @@ run "rejects_invalid_security_group_id" {
   }
 
   expect_failures = [var.security_group_id]
+}
+
+run "accepts_sharing_disabled" {
+  command = plan
+
+  variables {
+    security_group_id = null
+  }
+}
+
+run "accepts_sharing_enabled_with_valid_uuid" {
+  command = plan
+
+  variables {
+    security_group_id = "cccccccc-cccc-cccc-cccc-cccccccccccc"
+  }
 }
 
 run "rejects_invalid_validation_wait_seconds" {

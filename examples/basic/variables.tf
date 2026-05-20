@@ -18,11 +18,6 @@ variable "pipelines_host_url" {
   type        = string
 }
 
-variable "security_group_id" {
-  description = "The Entra ID security group object ID to grant pipeline access."
-  type        = string
-}
-
 variable "test_environment_id" {
   description = "The Power Platform environment ID of the test environment."
   type        = string

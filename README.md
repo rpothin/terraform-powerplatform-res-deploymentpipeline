@@ -125,7 +125,7 @@ Maximum 6 stages supported.
 - `deployment_spn_client_id`  - (Optional) The Azure AD client ID (application ID) of the service principal used for delegated deployments. Required when `use_delegated_deployment = true`. This maps to the `spnclientid` field on the `deploymentstage` Dataverse table.
 - `is_sharing_enabled`             - (Optional) Whether sharing is enabled for this stage. Defaults to `true`.
 - `require_predeployment_approval` - (Optional) Whether approval is required before deploying to this stage. Defaults to `false`.
-- `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `true`.
+- `require_preexport_approval`     - (Optional) Whether approval is required before the pre-export step. Only effective on the first stage. Defaults to `false`.
 - `use_delegated_deployment`       - (Optional) Whether to use a delegated service principal for deployment. Defaults to `false`.
 
 Type:
@@ -137,7 +137,7 @@ list(object({
     deployment_spn_client_id       = optional(string)
     is_sharing_enabled             = optional(bool, true)
     require_predeployment_approval = optional(bool, false)
-    require_preexport_approval     = optional(bool, true)
+    require_preexport_approval     = optional(bool, false)
     use_delegated_deployment       = optional(bool, false)
   }))
 ```
@@ -145,12 +145,6 @@ list(object({
 ### <a name="input_pipelines_host_url"></a> [pipelines\_host\_url](#input\_pipelines\_host\_url)
 
 Description: The Dataverse API URL for the Pipelines Host environment (e.g., https://org.crm.dynamics.com). Used for OData REST operations.
-
-Type: `string`
-
-### <a name="input_security_group_id"></a> [security\_group\_id](#input\_security\_group\_id)
-
-Description: The Entra ID (Azure AD) security group object ID to grant access to the deployment pipeline. The module creates a Dataverse team backed by this group, assigns the 'Deployment Pipeline User' security role, and shares the pipeline with the team.
 
 Type: `string`
 
@@ -198,6 +192,14 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_security_group_id"></a> [security\_group\_id](#input\_security\_group\_id)
+
+Description: The Entra ID (Azure AD) security group object ID to grant access to the deployment pipeline. When provided, the module creates a Dataverse team backed by this group, assigns the 'Deployment Pipeline User' security role, and shares the pipeline with the team. When omitted, sharing is disabled and only the pipeline records are created.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_validation_wait_seconds"></a> [validation\_wait\_seconds](#input\_validation\_wait\_seconds)
 
 Description: The number of seconds to wait after creating deployment environment records before checking their validation status. The Pipelines Host validates environments asynchronously. Must be between 0 and 600.
@@ -228,7 +230,7 @@ Description: The display name of the deployment pipeline.
 
 ### <a name="output_pipeline_team_id"></a> [pipeline\_team\_id](#output\_pipeline\_team\_id)
 
-Description: The Dataverse record ID of the team created for the Entra ID security group.
+Description: The Dataverse record ID of the team created for the Entra ID security group. Null when `security_group_id` is not provided (sharing disabled).
 
 ## Modules
 
@@ -250,12 +252,12 @@ Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## Known Platform Limitations
 
-These are known limitations in the Power Platform API that affect this module's behavior. They are not bugs in the module itself.
+These are known behaviors in the Power Platform API that affect this module's cleanup and lifecycle.
 
 | # | Limitation | Impact | Workaround |
 |---|-----------|--------|------------|
-| L1 | **`deploymentpipeline` and `deploymentstage` records cannot be deleted via API** | A Microsoft System plugin (`Microsoft.Crm.ObjectModel.CustomBusinessEntityService`) fires on DELETE and PATCH-to-deactivate of these record types, returning error `0x80073002` (duplicate unique constraint violation). This also occurs from the Power Platform UI. | Records remain in the Pipelines Host after `terraform destroy`. Manual cleanup via the Pipelines Host UI is not possible for these record types. `terraform destroy` will fail on the stage/pipeline deletion step — this is expected. |
-| L2 | **`deploymentenvironment` records cannot be cleaned up by teardown** | Because teardown fails at stage deletion (L1), Terraform stops before reaching `deploymentenvironment` destroy calls. On a fresh apply in the same host, Dataverse duplicate detection (`0x80040265`) would block creating the same environment registration again. | This module performs a **find-or-create** check: before creating a `deploymentenvironment` record, it queries for an existing active record with the same `environmentid`. If found, the existing record is reused. This makes repeated applies idempotent even after failed teardowns. |
+| L1 | **`deploymentpipeline` and `deploymentstage` cleanup is record-shape-dependent** | A Microsoft System plugin (`Microsoft.Crm.ObjectModel.CustomBusinessEntityService`) can fire on DELETE and PATCH-to-deactivate of these record types, returning error `0x80073002` (duplicate unique constraint violation). This was observed during testing and is under investigation. UI-created pipelines with a minimal record shape deleted successfully; Terraform-created pipelines with `delegateddeploymenttype = 1` on non-delegated stages did not. The root cause is not yet fully isolated. | This module now aligns its record shape with the UI-successful configuration: `delegateddeploymenttype` is omitted (not set to `1`) for non-delegated stages, and `preexportsteprequired` defaults to `false`. These changes apply to newly created records only (existing records already in state are not updated due to `ignore_changes = [columns]`). |
+| L2 | **`deploymentenvironment` records may be orphaned after failed teardowns** | If teardown fails at stage or pipeline deletion (L1), Terraform stops before reaching `deploymentenvironment` destroy calls. On a fresh apply in the same host, Dataverse duplicate detection (`0x80040265`) would block creating the same environment registration again. | This module performs a **find-or-create** check: before creating a `deploymentenvironment` record, it queries for an existing record with the same `environmentid`. If found, the existing record is reused. This makes repeated applies idempotent after failed teardowns. Note: reusing orphaned records from a prior run that ended in an inconsistent state carries some risk — if the existing record is in an unexpected state, prefer importing or manually deleting it before re-applying. |
 
 ## Known Deviations from AVM
 

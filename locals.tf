@@ -3,7 +3,7 @@ locals {
   deployment_environment_statuscode = var.lifecycle_state == "active" ? 1 : 2
 
   deployment_pipeline_user_role_matches = try([
-    for role in data.powerplatform_security_roles.host_environment.security_roles :
+    for role in(length(data.powerplatform_security_roles.host_environment) > 0 ? data.powerplatform_security_roles.host_environment[0].security_roles : []) :
     role.role_id
     if role.name == "Deployment Pipeline User"
   ], [])

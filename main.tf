@@ -9,6 +9,10 @@ data "powerplatform_data_records" "root_business_unit" {
 }
 
 data "powerplatform_security_roles" "host_environment" {
+  # Only fetch when sharing is enabled; avoids unnecessary API calls and prevents
+  # failures when the caller does not need the Deployment Pipeline User role.
+  count = var.security_group_id != null ? 1 : 0
+
   environment_id   = var.host_environment_id
   business_unit_id = local.root_business_unit_id
 }
@@ -74,6 +78,9 @@ resource "terraform_data" "validate_delegated_deployment" {
 }
 
 resource "terraform_data" "validate_root_business_unit" {
+  # Only validate when sharing is enabled; this data is only consumed by the team resource.
+  count = var.security_group_id != null ? 1 : 0
+
   lifecycle {
     precondition {
       condition     = try(length(data.powerplatform_data_records.root_business_unit.rows), 0) == 1
@@ -83,16 +90,20 @@ resource "terraform_data" "validate_root_business_unit" {
 }
 
 resource "terraform_data" "validate_deployment_pipeline_role" {
+  # Only validate when sharing is enabled; not needed when security_group_id is not set.
+  count = var.security_group_id != null ? 1 : 0
+
   lifecycle {
     precondition {
       # Allow empty security_roles (mock/test context); in real environments, exactly one match is required.
-      condition     = try(length(data.powerplatform_security_roles.host_environment.security_roles), 0) == 0 || length(local.deployment_pipeline_user_role_matches) == 1
+      condition     = try(length(data.powerplatform_security_roles.host_environment[0].security_roles), 0) == 0 || length(local.deployment_pipeline_user_role_matches) == 1
       error_message = "Expected exactly one 'Deployment Pipeline User' security role in the Pipelines Host environment, found ${length(local.deployment_pipeline_user_role_matches)}. Ensure the Power Platform Pipelines solution is installed in the host environment."
     }
   }
 }
 
 resource "terraform_data" "security_group_identity" {
+  count = var.security_group_id != null ? 1 : 0
   input = var.security_group_id
 }
 
@@ -227,13 +238,16 @@ resource "powerplatform_data_record" "stage_depth_0" {
   table_logical_name = "deploymentstage"
   disable_on_destroy = var.disable_on_destroy
 
+  # delegateddeploymenttype is set only when use_delegated_deployment = true.
+  # Omitting the field (via null) for non-delegated stages matches the UI-created record shape and avoids
+  # a Dataverse plugin constraint error (0x80073002) observed on teardown with value 1.
   columns = {
     deploymentpipelineid = {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[0].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[0].description
-    delegateddeploymenttype   = var.pipeline_stages[0].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[0].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[0].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -270,8 +284,8 @@ resource "powerplatform_data_record" "stage_depth_1" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[1].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[1].description
-    delegateddeploymenttype   = var.pipeline_stages[1].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[1].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[1].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -307,8 +321,8 @@ resource "powerplatform_data_record" "stage_depth_2" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[2].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[2].description
-    delegateddeploymenttype   = var.pipeline_stages[2].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[2].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[2].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -344,8 +358,8 @@ resource "powerplatform_data_record" "stage_depth_3" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[3].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[3].description
-    delegateddeploymenttype   = var.pipeline_stages[3].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[3].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[3].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -381,8 +395,8 @@ resource "powerplatform_data_record" "stage_depth_4" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[4].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[4].description
-    delegateddeploymenttype   = var.pipeline_stages[4].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[4].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[4].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -418,8 +432,8 @@ resource "powerplatform_data_record" "stage_depth_5" {
       table_logical_name = "deploymentpipeline"
       data_record_id     = powerplatform_data_record.pipeline.id
     }
+    delegateddeploymenttype   = var.pipeline_stages[5].use_delegated_deployment ? 2 : null
     description               = var.pipeline_stages[5].description
-    delegateddeploymenttype   = var.pipeline_stages[5].use_delegated_deployment ? 2 : 1
     isdelegateddeployment     = var.pipeline_stages[5].use_delegated_deployment
     issharingenabled          = var.pipeline_stages[5].is_sharing_enabled
     name                      = var.environments[each.key].name
@@ -446,6 +460,9 @@ resource "powerplatform_data_record" "stage_depth_5" {
 # ─── Step 3c: Create the pipeline access team and assign security role ────────
 
 resource "powerplatform_data_record" "pipeline_team" {
+  # Only created when an Entra ID security group is provided.
+  count = var.security_group_id != null ? 1 : 0
+
   environment_id     = var.host_environment_id
   table_logical_name = "team"
   disable_on_destroy = var.disable_on_destroy
@@ -474,13 +491,16 @@ resource "powerplatform_data_record" "pipeline_team" {
 
   lifecycle {
     ignore_changes       = [columns]
-    replace_triggered_by = [terraform_data.security_group_identity]
+    replace_triggered_by = [terraform_data.security_group_identity[0]]
   }
 }
 
 # ─── Step 4: Share the pipeline with the pipeline access team ─────────────────
 
 resource "powerplatform_rest" "pipeline_sharing" {
+  # Only created when an Entra ID security group is provided.
+  count = var.security_group_id != null ? 1 : 0
+
   create = {
     scope  = local.pipelines_host_scope
     method = "POST"
@@ -492,7 +512,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
       }
       PrincipalAccess = {
         Principal = {
-          teamid        = powerplatform_data_record.pipeline_team.id
+          teamid        = powerplatform_data_record.pipeline_team[0].id
           "@odata.type" = "Microsoft.Dynamics.CRM.team"
         }
         AccessMask = "ReadAccess"
@@ -511,7 +531,7 @@ resource "powerplatform_rest" "pipeline_sharing" {
         "@odata.type"        = "Microsoft.Dynamics.CRM.deploymentpipeline"
       }
       Revokee = {
-        teamid        = powerplatform_data_record.pipeline_team.id
+        teamid        = powerplatform_data_record.pipeline_team[0].id
         "@odata.type" = "Microsoft.Dynamics.CRM.team"
       }
     })

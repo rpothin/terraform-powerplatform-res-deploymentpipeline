@@ -15,7 +15,6 @@ module "deployment_pipeline" {
   host_environment_id = var.host_environment_id
   pipeline_name       = var.pipeline_name
   pipelines_host_url  = var.pipelines_host_url
-  security_group_id   = var.security_group_id
 
   environments = {
     dev = {
