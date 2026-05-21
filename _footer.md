@@ -10,7 +10,7 @@ The items below represent areas under consideration for future versions of this 
 | 4 | **Delegated deployment SPN provisioning guidance** | When `use_delegated_deployment = true`, the caller must supply the Azure AD client ID (`deployment_spn_client_id`) of a service principal already registered as an application user in Dataverse. A future version may include helper resources or documented runbook steps to reduce this out-of-band setup burden. |
 | 5 | **Record ownership (`ownerid`)** | Explicitly setting the owner of Dataverse records created by this module is not currently supported. The Power Platform provider serialises the `ownerid` lookup column in a format rejected by the `deploymentenvironment`, `deploymentpipeline`, and `deploymentstage` Dataverse entities. Records are owned by the identity running Terraform apply. This will be re-evaluated once provider-level support for lookup-column object format is confirmed. |
 
-Feedback and pull requests are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Feedback and pull requests are welcome. See [CONTRIBUTING.md](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/blob/main/CONTRIBUTING.md) for guidelines.
 
 ## Known Platform Limitations
 

@@ -33,7 +33,7 @@ export ARM_USE_OIDC=true
 
 This module is designed to be combined with environment provisioning modules (e.g., `powerplatform_environment`) to provide a complete ALM setup. The `environments` map accepts pre-existing environment IDs — provisioning is the caller's responsibility.
 
-See [examples/basic](./examples/basic/) for a minimal dev → test configuration and [examples/complete](./examples/complete/) for a full dev → test → staging → prod configuration with approval gates and sharing.
+See [examples/basic](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/basic) for a minimal dev → test configuration and [examples/complete](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/complete) for a full dev → test → staging → prod configuration with approval gates and sharing.
 
 ## Decommissioning
 
