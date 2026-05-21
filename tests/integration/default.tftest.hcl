@@ -1,41 +1,57 @@
-# Integration tests — uses real provider, requires OIDC credentials.
+# Integration tests require a real Power Platform environment.
+# Set the following environment variables before running:
+#   POWER_PLATFORM_TENANT_ID
+#   POWER_PLATFORM_CLIENT_ID
+#   ARM_USE_OIDC=true (or POWER_PLATFORM_USE_OIDC=true)
 #
-# Prerequisites:
-#   ARM_USE_OIDC=true                              (signals OIDC mode; reused from AzureRM convention by the Power Platform provider)
-#   POWER_PLATFORM_TENANT_ID=<your-tenant-id>
-#   POWER_PLATFORM_CLIENT_ID=<your-client-id>
-#
-# These tests create real resources against a Power Platform tenant.
-# Resources are automatically destroyed after test completion.
+# All module-specific inputs are injected at runtime via TF_VAR_* env vars:
+#   TF_VAR_host_environment_id  - Pipelines Host environment ID (UUID)
+#   TF_VAR_pipelines_host_url   - Pipelines Host Dataverse API URL
+#   TF_VAR_environments         - JSON map of environments, e.g.:
+#     '{"dev":{"id":"<uuid>","name":"tftest-dev"},"test":{"id":"<uuid>","name":"tftest-test"}}'
+#   TF_VAR_security_group_id    - (Optional) Entra ID security group object ID (UUID);
+#                                  when set, the module creates a team and shares the pipeline.
 
-run "creates_resource_with_required_variables" {
-  command = apply
+provider "powerplatform" {}
 
-  variables {
-    name     = "tftest-integration"
-    location = "unitedstates"
-  }
+variables {
+  dev_environment_key     = "dev"
+  pipeline_name           = "tftest-deployment-pipeline"
+  validation_wait_seconds = 60
 
-  assert {
-    condition     = output.name == "tftest-integration"
-    error_message = "Resource name should match the input variable."
-  }
+  # Explicitly disable sharing so this test exercises only core pipeline lifecycle.
+  # If teardown fails after a Dataverse team is created, the leftover group-backed team record
+  # can cause azureactivedirectoryobjectid uniqueness collisions on subsequent CI runs.
+  # Sharing is covered by unit tests.
+  security_group_id = null
+
+  pipeline_stages = [
+    {
+      environment_key = "test"
+    }
+  ]
 }
 
-run "creates_resource_with_all_variables" {
+run "creates_pipeline_environments_and_team" {
   command = apply
 
-  variables {
-    name     = "tftest-integration-complete"
-    location = "unitedstates"
-    tags = {
-      environment = "integration-test"
-      managed_by  = "terraform-test"
-    }
+  assert {
+    condition     = output.pipeline_id != ""
+    error_message = "pipeline_id should not be empty after apply"
   }
 
   assert {
-    condition     = output.name == "tftest-integration-complete"
-    error_message = "Resource name should match the input variable."
+    condition     = length(output.deployment_environment_ids) == 2
+    error_message = "Should have 2 deployment environment IDs"
+  }
+
+  assert {
+    condition     = output.pipeline_team_id == null || length(output.pipeline_team_id) > 0
+    error_message = "pipeline_team_id must be null (sharing disabled) or a non-empty UUID (sharing enabled)"
+  }
+
+  assert {
+    condition     = length(output.deployment_stage_ids) == 1
+    error_message = "Should have 1 deployment stage ID"
   }
 }

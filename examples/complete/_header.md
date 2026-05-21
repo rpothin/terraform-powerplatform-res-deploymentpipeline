@@ -1,3 +1,3 @@
 # Complete Example
 
-This example demonstrates a full configuration using all available options for this module.
+This example creates a development-to-test-to-staging-to-production deployment pipeline with optional sharing.
