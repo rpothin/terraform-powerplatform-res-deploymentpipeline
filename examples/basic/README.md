@@ -77,7 +77,7 @@ The following Modules are called:
 
 Source: rpothin/res-deploymentpipeline/powerplatform
 
-Version: 0.1.0
+Version: ~> 0.1
 
 <!-- TODO (before publishing to Terraform Registry): Replace the relative links below
      with absolute GitHub URLs, e.g.:
