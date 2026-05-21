@@ -104,7 +104,7 @@ The following Modules are called:
 
 ### <a name="module_deployment_pipeline"></a> [deployment\_pipeline](#module\_deployment\_pipeline)
 
-Source: rpothin/deploymentpipeline/powerplatform
+Source: rpothin/res-deploymentpipeline/powerplatform
 
 Version: 0.1.0
 
