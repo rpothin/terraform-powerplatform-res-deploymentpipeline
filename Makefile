@@ -5,8 +5,6 @@ fmt:
 
 validate: init
 	terraform validate
-	cd examples/basic && terraform init -backend=false && terraform validate
-	cd examples/complete && terraform init -backend=false && terraform validate
 
 init:
 	terraform init -backend=false

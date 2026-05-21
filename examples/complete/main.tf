@@ -9,7 +9,8 @@ terraform {
 }
 
 module "deployment_pipeline" {
-  source = "../.."
+  source  = "rpothin/deploymentpipeline/powerplatform"
+  version = "0.1.0"
 
   dev_environment_key = "dev"
   host_environment_id = var.host_environment_id

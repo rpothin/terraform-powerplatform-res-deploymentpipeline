@@ -104,9 +104,9 @@ The following Modules are called:
 
 ### <a name="module_deployment_pipeline"></a> [deployment\_pipeline](#module\_deployment\_pipeline)
 
-Source: ../..
+Source: rpothin/deploymentpipeline/powerplatform
 
-Version:
+Version: 0.1.0
 
 <!-- TODO (before publishing to Terraform Registry): Replace the relative links below
      with absolute GitHub URLs, e.g.:
