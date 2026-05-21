@@ -96,7 +96,7 @@ Description: The Dataverse record ID of the deployment pipeline.
 
 ### <a name="output_sharing_enabled"></a> [sharing\_enabled](#output\_sharing\_enabled)
 
-Description: Whether the pipeline sharing configuration is enabled.
+Description: Whether pipeline sharing is enabled (true when a security\_group\_id was provided).
 
 ## Modules
 

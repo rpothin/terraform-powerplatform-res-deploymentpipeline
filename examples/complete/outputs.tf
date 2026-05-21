@@ -9,6 +9,6 @@ output "deployment_stage_ids" {
 }
 
 output "sharing_enabled" {
-  description = "Whether the pipeline sharing configuration is enabled."
-  value       = module.deployment_pipeline.sharing_enabled
+  description = "Whether pipeline sharing is enabled (true when a security_group_id was provided)."
+  value       = module.deployment_pipeline.pipeline_team_id != null
 }

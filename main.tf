@@ -18,10 +18,9 @@ data "powerplatform_security_roles" "host_environment" {
 }
 
 # Idempotent: check whether a deploymentenvironment record already exists for each PP environment.
-# A Power Platform System plugin bug (0x80073002) prevents deletion of deploymentstage and
-# deploymentpipeline records, so terraform destroy/test teardown always fails partway through,
-# leaving deploymentenvironment records orphaned. The next apply/test run would hit the Dataverse
-# unique constraint on environmentid (0x80040265) if we tried to create duplicates.
+# Dataverse enforces a unique constraint on environmentid (0x80040265), so attempting to create
+# a duplicate record (e.g., after a failed teardown that left records orphaned) would fail.
+# The find-or-create check below reuses any existing record to make repeated applies idempotent.
 data "powerplatform_data_records" "existing_deployment_environment" {
   for_each = var.environments
 
@@ -95,7 +94,9 @@ resource "terraform_data" "validate_deployment_pipeline_role" {
 
   lifecycle {
     precondition {
-      # Allow empty security_roles (mock/test context); in real environments, exactly one match is required.
+      # The length == 0 guard accommodates mock providers (unit tests) where the mock framework
+      # cannot provide typed security_roles objects. In real environments the Pipelines solution
+      # must be installed so exactly one "Deployment Pipeline User" role exists.
       condition     = try(length(data.powerplatform_security_roles.host_environment[0].security_roles), 0) == 0 || length(local.deployment_pipeline_user_role_matches) == 1
       error_message = "Expected exactly one 'Deployment Pipeline User' security role in the Pipelines Host environment, found ${length(local.deployment_pipeline_user_role_matches)}. Ensure the Power Platform Pipelines solution is installed in the host environment."
     }
@@ -135,10 +136,6 @@ resource "powerplatform_data_record" "deployment_environment" {
     terraform_data.validate_dev_environment_key,
     terraform_data.validate_stage_environment_keys,
   ]
-
-  lifecycle {
-    ignore_changes = [columns]
-  }
 }
 
 # ─── Step 1 (validation): Wait for async Pipelines Host environment validation
@@ -205,7 +202,9 @@ resource "powerplatform_data_record" "pipeline" {
   depends_on = [terraform_data.validation_assertion]
 
   lifecycle {
-    ignore_changes = [columns]
+    # Only ignore the nullable description column which may drift (null vs "").
+    # statecode and statuscode must remain managed so lifecycle_state changes take effect.
+    ignore_changes = [columns["description"]]
   }
 }
 
@@ -270,7 +269,14 @@ resource "powerplatform_data_record" "stage_depth_0" {
   ]
 
   lifecycle {
-    ignore_changes = [columns]
+    # Ignore lookup columns (provider reads them back as GUIDs, not objects) and nullable strings.
+    # statecode and statuscode remain managed so lifecycle_state changes take effect.
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -306,7 +312,13 @@ resource "powerplatform_data_record" "stage_depth_1" {
   }
 
   lifecycle {
-    ignore_changes = [columns]
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["previousdeploymentstageid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -342,7 +354,13 @@ resource "powerplatform_data_record" "stage_depth_2" {
   }
 
   lifecycle {
-    ignore_changes = [columns]
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["previousdeploymentstageid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -378,7 +396,13 @@ resource "powerplatform_data_record" "stage_depth_3" {
   }
 
   lifecycle {
-    ignore_changes = [columns]
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["previousdeploymentstageid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -414,7 +438,13 @@ resource "powerplatform_data_record" "stage_depth_4" {
   }
 
   lifecycle {
-    ignore_changes = [columns]
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["previousdeploymentstageid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -450,7 +480,13 @@ resource "powerplatform_data_record" "stage_depth_5" {
   }
 
   lifecycle {
-    ignore_changes = [columns]
+    ignore_changes = [
+      columns["deploymentpipelineid"],
+      columns["previousdeploymentstageid"],
+      columns["targetdeploymentenvironmentid"],
+      columns["description"],
+      columns["spnclientid"],
+    ]
   }
 }
 
@@ -475,7 +511,7 @@ resource "powerplatform_data_record" "pipeline_team" {
       data_record_id     = local.root_business_unit_id
     }
 
-    teamroles_association = tolist([{
+    teamroles_association = toset([{
       table_logical_name = "role"
       data_record_id     = local.deployment_pipeline_user_role_id
     }])
@@ -487,7 +523,10 @@ resource "powerplatform_data_record" "pipeline_team" {
   ]
 
   lifecycle {
-    ignore_changes       = [columns]
+    # businessunitid is a lookup column; teamroles_association is a many-to-many that
+    # the provider manages out-of-band. Both are ignored to prevent spurious updates.
+    # statecode/statuscode remain managed so lifecycle_state changes take effect.
+    ignore_changes       = [columns["businessunitid"], columns["teamroles_association"]]
     replace_triggered_by = [terraform_data.security_group_identity[0]]
   }
 }
