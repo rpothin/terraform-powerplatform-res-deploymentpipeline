@@ -36,7 +36,7 @@ This module is designed to be combined with environment provisioning modules (e.
 See [examples/basic](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/basic) for a minimal dev → test configuration and [examples/complete](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/complete) for a full dev → test → staging → prod configuration with approval gates and sharing.
 
 > [!NOTE]
-> If `deploymentenvironment` records for your environments already exist in the Pipelines Host (for example, after a failed `terraform destroy`), import them into Terraform state before running `terraform apply`, otherwise Dataverse will reject the create with a uniqueness error (`0x80040265`):
+> If `deploymentenvironment` records for your environments already exist in the Pipelines Host — for example, after a failed `terraform destroy`, a manual pre-creation in Dataverse, or an **upgrade from an older module version** that auto-adopted pre-existing records without importing them — import them into Terraform state before running `terraform apply`, otherwise Dataverse will reject the create with a uniqueness error (`0x80040265`):
 > ```bash
 > terraform import 'module.<name>.powerplatform_data_record.deployment_environment["<key>"]' <deploymentenvironmentid>
 > ```

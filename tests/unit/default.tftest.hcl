@@ -272,6 +272,19 @@ run "all_environments_have_registration_ids" {
   }
 }
 
+# Regression: the module must plan successfully when environment IDs are unknown
+# at plan time (as they are on a first apply when environments are newly created
+# by the caller). The old code raised "Invalid for_each argument" in this scenario
+# because the for_each depended on a data source whose filter used each.value.id.
+# The fix uses for_each = var.environments so keys are always statically known.
+run "day1_plan_with_unknown_environment_ids" {
+  command = plan
+
+  module {
+    source = "./tests/unit/fixtures/day1_caller"
+  }
+}
+
 run "rejects_dev_key_not_in_environments" {
   command = plan
 
