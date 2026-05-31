@@ -37,6 +37,26 @@ This module is designed to be combined with environment provisioning modules (e.
 
 See [examples/basic](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/basic) for a minimal dev → test configuration and [examples/complete](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/complete) for a full dev → test → staging → prod configuration with approval gates and sharing.
 
+> [!NOTE]
+> If `deploymentenvironment` records for your environments already exist in the Pipelines Host — for example, after a failed `terraform destroy`, a manual pre-creation in Dataverse, or an **upgrade from an older module version** that auto-adopted pre-existing records without importing them — import them into Terraform state before running `terraform apply`, otherwise Dataverse will reject the create with a uniqueness error (`0x80040265`):
+> ```bash
+> terraform import 'module.<name>.powerplatform_data_record.deployment_environment["<key>"]' <deploymentenvironmentid>
+>
+```
+> Repeat for each environment key. Once imported, subsequent applies succeed normally.
+
+> [!IMPORTANT]
+> The following inputs must be **known at plan time** (they drive `for_each` keys or `count` expressions and cannot be deferred):
+>
+> | Input | Reason |
+> |---|---|
+> | `var.environments` map **keys** | Used as `for_each` keys for environment registration |
+> | `var.pipeline_stages[*].environment_key` | Used as `for_each` keys for stage resources |
+> | `var.pipeline_stages[*].use_delegated_deployment` | Drives a `for_each` filter for delegated-deployment validation |
+> | `var.security_group_id` (null vs non-null) | Drives `count` expressions for sharing resources |
+>
+> Environment **IDs** (`var.environments[*].id`) are the exception — they may be unknown at plan time, for example when passed directly from a sibling `powerplatform_environment` module on a first apply. All other values (names, flags, URLs) that feed resource *column values* can similarly be unknown at plan time.
+
 ## Decommissioning
 
 When a team's Power Platform environments are being retired, you can archive the pipeline configuration in the Pipelines Host without immediately deleting the records. This preserves an audit trail in the Pipelines Host.
@@ -84,7 +104,6 @@ The following resources are used by this module:
 - [terraform_data.validation_assertion](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [terraform_data.wait_for_validation](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [powerplatform_data_records.environment_validation](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/data-sources/data_records) (data source)
-- [powerplatform_data_records.existing_deployment_environment](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/data-sources/data_records) (data source)
 - [powerplatform_data_records.root_business_unit](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/data-sources/data_records) (data source)
 - [powerplatform_security_roles.host_environment](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/data-sources/security_roles) (data source)
 
@@ -104,8 +123,10 @@ Type: `string`
 Description: A map of Power Platform environments to register in the Pipelines Host.  
 Each key is a stable identifier used to reference the environment in `dev_environment_key` and `pipeline_stages[*].environment_key`.
 
-- `id`   - The Power Platform environment ID (UUID format).
+- `id`   - The Power Platform environment ID (UUID format). May be unknown at plan time (e.g., when passed from a sibling environment module on first apply).
 - `name` - The display name to use when registering the environment in the Pipelines Host.
+
+Note: map **keys** must be known at plan time as they are used as `for_each` keys.
 
 Type:
 
@@ -263,7 +284,7 @@ These are known behaviors in the Power Platform API that affect this module's cl
 | # | Limitation | Impact | Workaround |
 |---|-----------|--------|------------|
 | L1 | **Direct HTTP DELETE on `deploymentpipeline` records triggers a plugin failure** | HTTP DELETE on `deploymentpipeline` fires the `Microsoft.Dynamics.AppDeploymentMetadata.Plugins` assembly, which returns `0x80073002` (SQL unique constraint violation) and prevents the deletion. | This module hardcodes `disable_on_destroy = true` on all Dataverse records. This causes the provider to deactivate each record (PATCH `statecode=1`) before deleting it. The deactivate-before-delete sequence satisfies the plugin's precondition, allowing the subsequent DELETE to succeed. Records are always fully deleted on `terraform destroy`. This is an internal implementation detail — it is not user-configurable. |
-| L2 | **`deploymentenvironment` records may be orphaned after failed teardowns** | If teardown fails at stage or pipeline deletion (L1), Terraform stops before reaching `deploymentenvironment` destroy calls. On a fresh apply in the same host, Dataverse duplicate detection (`0x80040265`) would block creating the same environment registration again. | This module performs a **find-or-create** check: before creating a `deploymentenvironment` record, it queries for an existing record with the same `environmentid`. If found, the existing record is reused. This makes repeated applies idempotent after failed teardowns. Note: reusing orphaned records from a prior run that ended in an inconsistent state carries some risk — if the existing record is in an unexpected state, prefer importing or manually deleting it before re-applying. |
+| L2 | **`deploymentenvironment` records may be orphaned after failed teardowns** | If teardown fails at stage or pipeline deletion (L1), Terraform stops before reaching `deploymentenvironment` destroy calls. On a fresh apply in the same host, Dataverse duplicate detection (`0x80040265`) will block creating the same environment registration again. This also affects users **upgrading from an older module version** that auto-adopted pre-existing records without importing them: those records are in Dataverse but not in state, and a fresh apply will attempt to re-create them. | Import the existing record into Terraform state before re-applying: `terraform import 'module.<name>.powerplatform_data_record.deployment_environment["<key>"]' <deploymentenvironmentid>`. Once imported, subsequent applies succeed normally. Alternatively, delete the orphaned record manually in Dataverse before re-applying. |
 
 ## Known Deviations from AVM
 

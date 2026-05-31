@@ -35,6 +35,25 @@ This module is designed to be combined with environment provisioning modules (e.
 
 See [examples/basic](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/basic) for a minimal dev → test configuration and [examples/complete](https://github.com/rpothin/terraform-powerplatform-res-deploymentpipeline/tree/main/examples/complete) for a full dev → test → staging → prod configuration with approval gates and sharing.
 
+> [!NOTE]
+> If `deploymentenvironment` records for your environments already exist in the Pipelines Host — for example, after a failed `terraform destroy`, a manual pre-creation in Dataverse, or an **upgrade from an older module version** that auto-adopted pre-existing records without importing them — import them into Terraform state before running `terraform apply`, otherwise Dataverse will reject the create with a uniqueness error (`0x80040265`):
+> ```bash
+> terraform import 'module.<name>.powerplatform_data_record.deployment_environment["<key>"]' <deploymentenvironmentid>
+> ```
+> Repeat for each environment key. Once imported, subsequent applies succeed normally.
+
+> [!IMPORTANT]
+> The following inputs must be **known at plan time** (they drive `for_each` keys or `count` expressions and cannot be deferred):
+>
+> | Input | Reason |
+> |---|---|
+> | `var.environments` map **keys** | Used as `for_each` keys for environment registration |
+> | `var.pipeline_stages[*].environment_key` | Used as `for_each` keys for stage resources |
+> | `var.pipeline_stages[*].use_delegated_deployment` | Drives a `for_each` filter for delegated-deployment validation |
+> | `var.security_group_id` (null vs non-null) | Drives `count` expressions for sharing resources |
+>
+> Environment **IDs** (`var.environments[*].id`) are the exception — they may be unknown at plan time, for example when passed directly from a sibling `powerplatform_environment` module on a first apply. All other values (names, flags, URLs) that feed resource *column values* can similarly be unknown at plan time.
+
 ## Decommissioning
 
 When a team's Power Platform environments are being retired, you can archive the pipeline configuration in the Pipelines Host without immediately deleting the records. This preserves an audit trail in the Pipelines Host.

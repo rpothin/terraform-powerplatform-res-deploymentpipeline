@@ -14,8 +14,10 @@ variable "environments" {
 A map of Power Platform environments to register in the Pipelines Host.
 Each key is a stable identifier used to reference the environment in `dev_environment_key` and `pipeline_stages[*].environment_key`.
 
-- `id`   - The Power Platform environment ID (UUID format).
+- `id`   - The Power Platform environment ID (UUID format). May be unknown at plan time (e.g., when passed from a sibling environment module on first apply).
 - `name` - The display name to use when registering the environment in the Pipelines Host.
+
+Note: map **keys** must be known at plan time as they are used as `for_each` keys.
 DESCRIPTION
   type = map(object({
     id   = string
