@@ -105,7 +105,9 @@ jobs:
           terraform_wrapper: false
 
       - name: Run Unit Tests
-        run: make test-unit
+        run: |
+          terraform init -backend=false -test-directory=tests/unit
+          terraform test -test-directory=tests/unit
 
   integration:
     name: Integration Tests
