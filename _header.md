@@ -42,6 +42,18 @@ See [examples/basic](https://github.com/rpothin/terraform-powerplatform-res-depl
 > ```
 > Repeat for each environment key. Once imported, subsequent applies succeed normally.
 
+> [!IMPORTANT]
+> The following inputs must be **known at plan time** (they drive `for_each` keys or `count` expressions and cannot be deferred):
+>
+> | Input | Reason |
+> |---|---|
+> | `var.environments` map **keys** | Used as `for_each` keys for environment registration |
+> | `var.pipeline_stages[*].environment_key` | Used as `for_each` keys for stage resources |
+> | `var.pipeline_stages[*].use_delegated_deployment` | Drives a `for_each` filter for delegated-deployment validation |
+> | `var.security_group_id` (null vs non-null) | Drives `count` expressions for sharing resources |
+>
+> Environment **IDs** (`var.environments[*].id`) are the exception — they may be unknown at plan time, for example when passed directly from a sibling `powerplatform_environment` module on a first apply. All other values (names, flags, URLs) that feed resource *column values* can similarly be unknown at plan time.
+
 ## Decommissioning
 
 When a team's Power Platform environments are being retired, you can archive the pipeline configuration in the Pipelines Host without immediately deleting the records. This preserves an audit trail in the Pipelines Host.
