@@ -175,10 +175,10 @@ resource "powerplatform_data_record" "pipeline" {
     description    = var.pipeline_description
     deploymenttype = 0
 
-    # Link the dev (source) environment to the pipeline via its Dataverse N:N association.
-    # Using the _association column pattern avoids powerplatform_rest (deprecated) which
-    # returned "Provider returned invalid result object after apply" on HTTP 204 responses.
-    deploymentpipeline_deploymentenvironment_association = toset([{
+    # Link the dev (source) environment to the pipeline via its Dataverse N:N navigation property.
+    # The provider manages list-valued relations by POSTing to /<navigation-property>/$ref.
+    # For this table, the correct navigation property is deploymentpipeline_deploymentenvironment.
+    deploymentpipeline_deploymentenvironment = toset([{
       table_logical_name = "deploymentenvironment"
       data_record_id     = local.resolved_deployment_environment_id[var.dev_environment_key]
     }])
@@ -195,14 +195,14 @@ resource "powerplatform_data_record" "pipeline" {
   lifecycle {
     # Only ignore the nullable description column which may drift (null vs "").
     # statecode and statuscode must remain managed so lifecycle_state changes take effect.
-    # deploymentpipeline_deploymentenvironment_association is intentionally kept managed:
+    # deploymentpipeline_deploymentenvironment is intentionally kept managed:
     # applyRelations performs proper GET/diff/POST so drift is detected and corrected.
     ignore_changes = [columns["description"]]
   }
 }
 
 # Removed: powerplatform_rest.dev_link was replaced by the
-# deploymentpipeline_deploymentenvironment_association column above.
+# deploymentpipeline_deploymentenvironment relation above.
 # destroy = false prevents accidental deletion of the Dataverse $ref link during
 # upgrade from module versions that used powerplatform_rest.dev_link.
 removed {
