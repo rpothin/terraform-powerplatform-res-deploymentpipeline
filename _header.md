@@ -7,8 +7,8 @@ Terraform module for configuring a Power Platform Custom Pipelines deployment pi
 This module automates all four configuration steps of a Power Platform Custom Pipelines Host:
 
 1. **Environment registration** — Registers pre-existing Power Platform environments as `deploymentenvironment` Dataverse records in the Pipelines Host. Includes async validation detection to ensure each environment passes Pipelines Host validation before the pipeline is created.
-2. **Pipeline creation** — Creates the `deploymentpipeline` Dataverse record.
-3. **Stage setup** — Links the dev (source) environment to the pipeline and creates an ordered linear chain of `deploymentstage` records. Supports 1–6 target stages.
+2. **Pipeline creation** — Creates the `deploymentpipeline` Dataverse record and links the dev (source) environment via its Dataverse N:N association.
+3. **Stage setup** — Creates an ordered linear chain of `deploymentstage` records. Supports 1–6 target stages.
 4. **Pipeline sharing** — Creates a Dataverse team backed by the provided Entra ID security group, assigns the "Deployment Pipeline User" security role, and shares the pipeline with the team.
 
 ## Prerequisites

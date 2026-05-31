@@ -9,8 +9,8 @@ Terraform module for configuring a Power Platform Custom Pipelines deployment pi
 This module automates all four configuration steps of a Power Platform Custom Pipelines Host:
 
 1. **Environment registration** — Registers pre-existing Power Platform environments as `deploymentenvironment` Dataverse records in the Pipelines Host. Includes async validation detection to ensure each environment passes Pipelines Host validation before the pipeline is created.
-2. **Pipeline creation** — Creates the `deploymentpipeline` Dataverse record.
-3. **Stage setup** — Links the dev (source) environment to the pipeline and creates an ordered linear chain of `deploymentstage` records. Supports 1–6 target stages.
+2. **Pipeline creation** — Creates the `deploymentpipeline` Dataverse record and links the dev (source) environment via its Dataverse N:N association.
+3. **Stage setup** — Creates an ordered linear chain of `deploymentstage` records. Supports 1–6 target stages.
 4. **Pipeline sharing** — Creates a Dataverse team backed by the provided Entra ID security group, assigns the "Deployment Pipeline User" security role, and shares the pipeline with the team.
 
 ## Prerequisites
@@ -93,7 +93,6 @@ The following resources are used by this module:
 - [powerplatform_data_record.stage_depth_3](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/resources/data_record) (resource)
 - [powerplatform_data_record.stage_depth_4](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/resources/data_record) (resource)
 - [powerplatform_data_record.stage_depth_5](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/resources/data_record) (resource)
-- [powerplatform_rest.dev_link](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/resources/rest) (resource)
 - [powerplatform_rest.pipeline_sharing](https://registry.terraform.io/providers/microsoft/power-platform/latest/docs/resources/rest) (resource)
 - [terraform_data.security_group_identity](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)
 - [terraform_data.validate_delegated_deployment](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) (resource)

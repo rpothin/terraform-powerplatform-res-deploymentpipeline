@@ -164,7 +164,7 @@ EOT
   }
 }
 
-# ─── Step 2: Create the deployment pipeline record ───────────────────────────
+# ─── Step 2: Create the deployment pipeline record and link the dev environment
 
 resource "powerplatform_data_record" "pipeline" {
   environment_id     = var.host_environment_id
@@ -172,8 +172,17 @@ resource "powerplatform_data_record" "pipeline" {
   disable_on_destroy = true
 
   columns = {
-    description             = var.pipeline_description
-    deploymenttype          = 0
+    description    = var.pipeline_description
+    deploymenttype = 0
+
+    # Link the dev (source) environment to the pipeline via its Dataverse N:N navigation property.
+    # The provider manages list-valued relations by POSTing to /<navigation-property>/$ref.
+    # For this table, the correct navigation property is deploymentpipeline_deploymentenvironment.
+    deploymentpipeline_deploymentenvironment = toset([{
+      table_logical_name = "deploymentenvironment"
+      data_record_id     = local.resolved_deployment_environment_id[var.dev_environment_key]
+    }])
+
     enableaideploymentnotes = var.enable_ai_deployment_notes
     enableredeployment      = var.enable_redeployment
     name                    = var.pipeline_name
@@ -186,29 +195,21 @@ resource "powerplatform_data_record" "pipeline" {
   lifecycle {
     # Only ignore the nullable description column which may drift (null vs "").
     # statecode and statuscode must remain managed so lifecycle_state changes take effect.
+    # deploymentpipeline_deploymentenvironment is intentionally kept managed:
+    # applyRelations performs proper GET/diff/POST so drift is detected and corrected.
     ignore_changes = [columns["description"]]
   }
 }
 
-# ─── Step 3a: Link the dev environment to the pipeline (OData $ref) ──────────
+# Removed: powerplatform_rest.dev_link was replaced by the
+# deploymentpipeline_deploymentenvironment relation above.
+# destroy = false prevents accidental deletion of the Dataverse $ref link during
+# upgrade from module versions that used powerplatform_rest.dev_link.
+removed {
+  from = powerplatform_rest.dev_link
 
-resource "powerplatform_rest" "dev_link" {
-  create = {
-    scope  = local.pipelines_host_scope
-    method = "POST"
-    url    = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref"
-    body = jsonencode({
-      "@odata.id" = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${local.resolved_deployment_environment_id[var.dev_environment_key]})"
-    })
-    expected_http_status = [204]
-  }
-
-  destroy = {
-    scope                = local.pipelines_host_scope
-    method               = "DELETE"
-    url                  = "${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentpipelines(${powerplatform_data_record.pipeline.id})/deploymentpipeline_deploymentenvironment/$ref?$id=${local.pipelines_host_url_normalized}/api/data/v9.0/deploymentenvironments(${local.resolved_deployment_environment_id[var.dev_environment_key]})"
-    body                 = ""
-    expected_http_status = [204, 404]
+  lifecycle {
+    destroy = false
   }
 }
 
@@ -245,10 +246,7 @@ resource "powerplatform_data_record" "stage_depth_0" {
     }
   }
 
-  depends_on = [
-    powerplatform_rest.dev_link,
-    terraform_data.validate_delegated_deployment,
-  ]
+  depends_on = [terraform_data.validate_delegated_deployment]
 
   lifecycle {
     # Ignore lookup columns (provider reads them back as GUIDs, not objects) and nullable strings.
