@@ -18,19 +18,12 @@ locals {
 
   root_business_unit_id = try(tostring(data.powerplatform_data_records.root_business_unit.rows[0]["businessunitid"]), null)
 
-  # Idempotent: for each environment, the ID of an already-registered deploymentenvironment
-  # record (null when none exists and a new record must be created).
-  existing_deployment_environment_id = {
-    for k, d in data.powerplatform_data_records.existing_deployment_environment :
-    k => length(d.rows) > 0 ? try(tostring(d.rows[0]["deploymentenvironmentid"]), null) : null
-  }
-
-  # Resolved IDs that are valid regardless of whether the record was just created or pre-existed.
+  # Invariant: powerplatform_data_record.deployment_environment always uses
+  # for_each = var.environments, so every key in var.environments has a corresponding
+  # managed resource. Do not introduce conditional instances without revisiting this local.
   resolved_deployment_environment_id = {
     for k in keys(var.environments) :
-    k => local.existing_deployment_environment_id[k] != null ?
-    local.existing_deployment_environment_id[k] :
-    try(powerplatform_data_record.deployment_environment[k].id, null)
+    k => powerplatform_data_record.deployment_environment[k].id
   }
 
   stage_statecode  = var.lifecycle_state == "active" ? 0 : 1

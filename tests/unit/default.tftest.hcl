@@ -260,6 +260,18 @@ run "accepts_valid_minimal_configuration" {
   command = plan
 }
 
+run "all_environments_have_registration_ids" {
+  command = plan
+
+  # Regression: for_each = var.environments (not a conditional expression) ensures
+  # deployment_environment_ids always contains one entry per environment, including
+  # on a first apply when environment IDs are unknown at plan time (day-1 scenario).
+  assert {
+    condition     = length(output.deployment_environment_ids) == length(var.environments)
+    error_message = "deployment_environment_ids must contain one entry per environment in var.environments."
+  }
+}
+
 run "rejects_dev_key_not_in_environments" {
   command = plan
 

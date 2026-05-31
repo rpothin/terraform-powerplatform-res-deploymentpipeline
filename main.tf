@@ -17,20 +17,6 @@ data "powerplatform_security_roles" "host_environment" {
   business_unit_id = local.root_business_unit_id
 }
 
-# Idempotent: check whether a deploymentenvironment record already exists for each PP environment.
-# Dataverse enforces a unique constraint on environmentid (0x80040265), so attempting to create
-# a duplicate record (e.g., after a failed teardown that left records orphaned) would fail.
-# The find-or-create check below reuses any existing record to make repeated applies idempotent.
-data "powerplatform_data_records" "existing_deployment_environment" {
-  for_each = var.environments
-
-  environment_id    = var.host_environment_id
-  entity_collection = "deploymentenvironments"
-  filter            = "environmentid eq '${each.value.id}'"
-  select            = ["deploymentenvironmentid", "statecode"]
-  top               = 1
-}
-
 # ─── Cross-variable validation preconditions ────────────────────────────────
 
 resource "terraform_data" "validate_dev_environment_key" {
@@ -111,11 +97,7 @@ resource "terraform_data" "security_group_identity" {
 # ─── Step 1: Register deployment environments in the Pipelines Host ──────────
 
 resource "powerplatform_data_record" "deployment_environment" {
-  # Only create records that do not already exist in the Pipelines Host.
-  for_each = {
-    for k, v in var.environments : k => v
-    if local.existing_deployment_environment_id[k] == null
-  }
+  for_each = var.environments
 
   environment_id     = var.host_environment_id
   table_logical_name = "deploymentenvironment"
