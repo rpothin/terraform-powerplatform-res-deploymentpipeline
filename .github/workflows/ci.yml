@@ -110,7 +110,7 @@ jobs:
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
-    if: vars.ENABLE_INTEGRATION_TESTS == 'true'
+    if: vars.ENABLE_INTEGRATION_TESTS == 'true' && secrets.POWER_PLATFORM_TENANT_ID != '' && secrets.POWER_PLATFORM_CLIENT_ID != ''
     permissions:
       contents: read
       id-token: write
